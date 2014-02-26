@@ -1,0 +1,27 @@
+#
+# Temporary Files
+#
+*~
+*#
+.#*
+\#*#
+.*.sw[a-z]
+*.pyc
+__pycache__/
+.coverage
+Gemfile.lock
+
+#
+# Build Environment
+#
+env/
+.state/
+build/
+
+#
+# Generated Files/Directories
+#
+dist/
+reports/
+*.egg
+*.egg-info/

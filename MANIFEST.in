@@ -1,0 +1,7 @@
+include .coveragerc
+include Makefile
+include setupext.py
+graft doc
+graft requirements
+graft tests
+recursive-exclude tests *.pyc
