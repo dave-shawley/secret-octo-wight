@@ -1,5 +1,4 @@
 import logging
-import urlparse
 
 import helper
 import tornado.ioloop
@@ -7,6 +6,7 @@ import tornado.log
 import tornado.web
 
 from . import __version__
+from . import http
 from .person import CreatePersonHandler, PersonHandler
 
 
@@ -31,8 +31,7 @@ class Application(tornado.web.Application):
                         url_spec = cur_spec
                         break
         if url_spec is not None:
-            return urlparse.urljoin(
-                request.full_url(), url_spec.reverse(*args))
+            return http.urljoin(request.full_url(), url_spec.reverse(*args))
         return None
 
 

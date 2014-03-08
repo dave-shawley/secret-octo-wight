@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-from pkg_resources import parse_requirements
 import os.path
 
 from setuptools import find_packages, setup
@@ -9,6 +8,7 @@ import familytree
 
 
 root_path = os.path.dirname(__file__)
+
 
 def read_requirements(file_name):
     return read_requirements_from_file(
