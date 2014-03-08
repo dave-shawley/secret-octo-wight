@@ -1,7 +1,6 @@
 import unittest
 
-from mock import ANY, MagicMock, Mock, sentinel
-from tornado.web import HTTPError
+from mock import ANY, Mock, sentinel
 import fluenttest
 
 from familytree.person import (

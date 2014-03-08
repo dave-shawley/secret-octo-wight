@@ -1,5 +1,3 @@
-import json
-
 from tornado.web import HTTPError
 
 from . import handlers

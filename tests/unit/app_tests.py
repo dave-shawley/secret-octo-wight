@@ -1,7 +1,6 @@
 import unittest
 
 from mock import Mock, sentinel
-from tornado.web import URLSpec
 import fluenttest
 
 from familytree.main import Application, main

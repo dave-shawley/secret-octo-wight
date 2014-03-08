@@ -18,7 +18,7 @@ except ImportError:
 
 __all__ = (
     'StatusCodes',
-    'urljoin',
+    urljoin.__name__,  # avoids flake8 warning
 )
 
 
