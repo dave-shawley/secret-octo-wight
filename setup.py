@@ -36,4 +36,7 @@ setup(
         'Operating System :: OS Independent',
         'Programming Language :: Python',
     ],
+    entry_points={
+        'console_scripts': ['family-tree-web = familytree.main:main'],
+    },
 )
