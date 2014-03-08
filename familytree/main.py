@@ -59,5 +59,4 @@ class Controller(helper.Controller):
 
 
 def main():
-    application.listen(7654)
-    tornado.ioloop.IOLoop.instance().start()
+    helper.start(Controller)

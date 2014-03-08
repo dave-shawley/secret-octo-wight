@@ -44,29 +44,19 @@ class WhenApplicationIsCreated(fluenttest.TestCase, unittest.TestCase):
         self.assert_was_installed(familytree.person.PersonHandler)
 
 
-class WhenRunningApplication(fluenttest.TestCase, unittest.TestCase):
+class WhenRunningMain(fluenttest.TestCase, unittest.TestCase):
 
     @classmethod
     def arrange(cls):
-        cls.the_application = cls.patch('familytree.main.application')
-        cls.IOLoop = cls.patch('familytree.main.tornado.ioloop.IOLoop')
+        cls.controller_class = cls.patch('familytree.main.Controller')
+        cls.helper = cls.patch('familytree.main.helper')
 
     @classmethod
     def act(cls):
         main()
 
-    @property
-    def the_ioloop(self):
-        return self.IOLoop.instance.return_value
-
-    def should_tell_application_to_listen(self):
-        self.the_application.listen.assert_called_once_with(7654)
-
-    def should_fetch_an_ioloop_instance(self):
-        self.IOLoop.instance.assert_called_once_with()
-
-    def should_run_tornado_ioloop(self):
-        self.the_ioloop.start.assert_called_once_with()
+    def should_start_controller_using_helper(self):
+        self.helper.start.assert_called_once_with(self.controller_class)
 
 
 class _GetUrlForTestCase(fluenttest.TestCase, unittest.TestCase):
