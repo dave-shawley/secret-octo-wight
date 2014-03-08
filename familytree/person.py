@@ -1,9 +1,9 @@
-import httplib
 import json
 
 from tornado.web import HTTPError
 
-from .handlers import BaseHandler
+from . import handlers
+from .http import StatusCodes
 
 
 class Person(object):
@@ -66,7 +66,7 @@ class Person(object):
         )
 
 
-class CreatePersonHandler(BaseHandler):
+class CreatePersonHandler(handlers.BaseHandler):
 
     """Root resource that creates a person."""
 
@@ -103,13 +103,13 @@ class CreatePersonHandler(BaseHandler):
                 },
                 model_handler=PersonHandler,
             )
-            self.set_status(httplib.CREATED)
+            self.set_status(StatusCodes.CREATED)
 
         except KeyError:
-            raise HTTPError(httplib.BAD_REQUEST)
+            raise HTTPError(StatusCodes.BAD_REQUEST)
 
 
-class PersonHandler(BaseHandler):
+class PersonHandler(handlers.BaseHandler):
 
     """Manages a person."""
 
