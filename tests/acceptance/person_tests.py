@@ -104,7 +104,7 @@ class WhenFetchingPerson(PersonApiMixin, PersonApiTestCase):
     def arrange(cls):
         super(WhenFetchingPerson, cls).arrange()
         response = cls.post_json('person', cls.request_body)
-        cls.person_url = cls.last_response.headers['Location']
+        cls.person_url = response.headers['Location']
 
     @classmethod
     def act(cls):
@@ -121,4 +121,3 @@ class WhenFetchingPerson(PersonApiMixin, PersonApiTestCase):
             {'method': 'DELETE'},
             self.response['actions']['delete-person'],
         )
-
