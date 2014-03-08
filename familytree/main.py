@@ -1,10 +1,16 @@
+import logging
 import urlparse
 
+import helper
 import tornado.ioloop
 import tornado.log
 import tornado.web
 
+from . import __version__
 from .person import CreatePersonHandler, PersonHandler
+
+
+LOGGER = logging.getLogger(__name__)
 
 
 class Application(tornado.web.Application):
@@ -31,6 +37,26 @@ class Application(tornado.web.Application):
 
 
 application = Application()
+
+
+class Controller(helper.Controller):
+    VERSION = __version__
+
+    def __init__(self, *args):
+        super(Controller, self).__init__(*args)
+        self.io_loop = None
+
+    def run(self):
+        """Instantiate and start the IOLoop."""
+        LOGGER.info('%s v%s started', self.APPNAME, self.VERSION)
+        self.setup()
+        self.set_state(self.STATE_ACTIVE)
+        application.listen(7654)
+        self.io_loop = tornado.ioloop.IOLoop.instance()
+        self.io_loop.start()
+
+    def cleanup(self):
+        self.io_loop.stop()
 
 
 def main():
