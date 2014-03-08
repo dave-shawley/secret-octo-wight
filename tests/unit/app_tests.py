@@ -97,7 +97,7 @@ class _SuccessfulGetUrlForTestCase(_GetUrlForTestCase):
     @classmethod
     def arrange(cls):
         super(_SuccessfulGetUrlForTestCase, cls).arrange()
-        cls.urlparse = cls.patch('familytree.main.urlparse')
+        cls.urljoin = cls.patch('familytree.main.http').urljoin
 
     def should_extract_full_url_from_request(self):
         self.request.full_url.assert_called_once_with()
@@ -106,13 +106,13 @@ class _SuccessfulGetUrlForTestCase(_GetUrlForTestCase):
         self.handler_urlspec.reverse.assert_called_once_with()
 
     def should_generate_url_from_urlspec_and_request(self):
-        self.urlparse.urljoin.assert_called_once_with(
+        self.urljoin.assert_called_once_with(
             self.request.full_url.return_value,
             self.handler_urlspec.reverse.return_value,
         )
 
     def should_return_generated_url(self):
-        self.assertIs(self.result, self.urlparse.urljoin.return_value)
+        self.assertIs(self.result, self.urljoin.return_value)
 
 
 class WhenGettingUrlForNamedHandler(_SuccessfulGetUrlForTestCase):
