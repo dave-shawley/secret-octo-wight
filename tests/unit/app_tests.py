@@ -84,10 +84,12 @@ class _GetUrlForTestCase(fluenttest.TestCase, unittest.TestCase):
 
     @classmethod
     def act(cls):
-        cls.result = cls.application.get_url_for(cls.request, sentinel.handler)
+        cls.result = cls.application.get_url_for(
+            cls.request, sentinel.handler)
 
     def should_lookup_named_handler(self):
-        self.application.named_handlers.get.assert_called_once_with(sentinel.handler)
+        self.application.named_handlers.get.assert_called_once_with(
+            sentinel.handler)
 
 
 class _SuccessfulGetUrlForTestCase(_GetUrlForTestCase):
@@ -144,5 +146,5 @@ class WhenGettingUrlForMissingClass(_GetUrlForTestCase):
             (sentinel.host_pattern, [cls.handler_urlspec]),
         ]
 
-    def should_return_None(self):
+    def should_return_none(self):
         self.assertIsNone(self.result)
