@@ -1,2 +1,3 @@
-Sphinx>=1.2,<1.3
-sphinxcontrib-httpdomain>=1.2,<1.3
+# Packages listed herein are required to run the basic setup
+# commands.  Tools listed in other requirement files will enable
+# additional functionality such as `build_sphinx` or `nosetests`.
