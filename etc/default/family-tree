@@ -1,0 +1,14 @@
+# Installation dir
+# FAMILY_TREE_DIR="/opt/family-tree"
+
+# Pid file location
+# FAMILY_TREE_PID_FILE="/var/run/family-tree.pid"
+
+# Additional arguments
+FAMILY_TREE_OPTS=""
+
+# Configuration file
+# FAMILY_TREE_CONF="${FAMILY_TREE_DIR}/family-tree.yaml"
+
+# Run as this user
+# FAMILY_TREE_USER="familytree"

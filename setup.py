@@ -25,6 +25,12 @@ setup(
     description='Web service for managing genealogical information',
     long_description='',
     packages=find_packages(exclude=['tests', 'tests.*']),
+    include_package_data=True,
+    data_files=[
+        ('etc', ['etc/family-tree.yaml']),
+        ('etc/init.d', ['etc/init.d/family-tree']),
+        ('etc/default', ['etc/default/family-tree']),
+    ],
     zip_safe=False,
     platforms='any',
     install_requires=read_requirements('install.txt'),
