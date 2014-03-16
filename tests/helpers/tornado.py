@@ -90,7 +90,7 @@ class TornadoTestCase(fluenttest.TestCase, unittest.TestCase):
             finally:
                 cls._stop()
 
-        tmo_handle = cls.io_loop.add_timeout(cls.io_loop.time() + 20.0, timeout)
+        tmo_handle = cls.io_loop.add_timeout(cls.io_loop.time() + 1, timeout)
         cls.io_loop.start()
         cls.io_loop.remove_timeout(tmo_handle)
 

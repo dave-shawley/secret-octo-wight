@@ -1,6 +1,5 @@
 import unittest
 
-from fluenttest import TestCase
 from mock import sentinel, Mock, MagicMock, PropertyMock
 from tornado.web import HTTPError
 

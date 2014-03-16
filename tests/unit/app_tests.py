@@ -1,7 +1,6 @@
 import unittest
 
 from mock import Mock, sentinel
-from tornado.web import URLSpec
 import fluenttest
 
 from familytree.main import Application, main
@@ -45,29 +44,19 @@ class WhenApplicationIsCreated(fluenttest.TestCase, unittest.TestCase):
         self.assert_was_installed(familytree.person.PersonHandler)
 
 
-class WhenRunningApplication(fluenttest.TestCase, unittest.TestCase):
+class WhenRunningMain(fluenttest.TestCase, unittest.TestCase):
 
     @classmethod
     def arrange(cls):
-        cls.the_application = cls.patch('familytree.main.application')
-        cls.IOLoop = cls.patch('familytree.main.tornado.ioloop.IOLoop')
+        cls.controller_class = cls.patch('familytree.main.Controller')
+        cls.helper = cls.patch('familytree.main.helper')
 
     @classmethod
     def act(cls):
         main()
 
-    @property
-    def the_ioloop(self):
-        return self.IOLoop.instance.return_value
-
-    def should_tell_application_to_listen(self):
-        self.the_application.listen.assert_called_once_with(7654)
-
-    def should_fetch_an_ioloop_instance(self):
-        self.IOLoop.instance.assert_called_once_with()
-
-    def should_run_tornado_ioloop(self):
-        self.the_ioloop.start.assert_called_once_with()
+    def should_start_controller_using_helper(self):
+        self.helper.start.assert_called_once_with(self.controller_class)
 
 
 class _GetUrlForTestCase(fluenttest.TestCase, unittest.TestCase):
@@ -84,10 +73,12 @@ class _GetUrlForTestCase(fluenttest.TestCase, unittest.TestCase):
 
     @classmethod
     def act(cls):
-        cls.result = cls.application.get_url_for(cls.request, sentinel.handler)
+        cls.result = cls.application.get_url_for(
+            cls.request, sentinel.handler)
 
     def should_lookup_named_handler(self):
-        self.application.named_handlers.get.assert_called_once_with(sentinel.handler)
+        self.application.named_handlers.get.assert_called_once_with(
+            sentinel.handler)
 
 
 class _SuccessfulGetUrlForTestCase(_GetUrlForTestCase):
@@ -95,7 +86,7 @@ class _SuccessfulGetUrlForTestCase(_GetUrlForTestCase):
     @classmethod
     def arrange(cls):
         super(_SuccessfulGetUrlForTestCase, cls).arrange()
-        cls.urlparse = cls.patch('familytree.main.urlparse')
+        cls.urljoin = cls.patch('familytree.main.http').urljoin
 
     def should_extract_full_url_from_request(self):
         self.request.full_url.assert_called_once_with()
@@ -104,13 +95,13 @@ class _SuccessfulGetUrlForTestCase(_GetUrlForTestCase):
         self.handler_urlspec.reverse.assert_called_once_with()
 
     def should_generate_url_from_urlspec_and_request(self):
-        self.urlparse.urljoin.assert_called_once_with(
+        self.urljoin.assert_called_once_with(
             self.request.full_url.return_value,
             self.handler_urlspec.reverse.return_value,
         )
 
     def should_return_generated_url(self):
-        self.assertIs(self.result, self.urlparse.urljoin.return_value)
+        self.assertIs(self.result, self.urljoin.return_value)
 
 
 class WhenGettingUrlForNamedHandler(_SuccessfulGetUrlForTestCase):
@@ -144,5 +135,5 @@ class WhenGettingUrlForMissingClass(_GetUrlForTestCase):
             (sentinel.host_pattern, [cls.handler_urlspec]),
         ]
 
-    def should_return_None(self):
+    def should_return_none(self):
         self.assertIsNone(self.result)

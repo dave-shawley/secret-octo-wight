@@ -1,10 +1,16 @@
-import urlparse
+import logging
 
+import helper
 import tornado.ioloop
 import tornado.log
 import tornado.web
 
+from . import __version__
+from . import http
 from .person import CreatePersonHandler, PersonHandler
+
+
+LOGGER = logging.getLogger(__name__)
 
 
 class Application(tornado.web.Application):
@@ -25,14 +31,32 @@ class Application(tornado.web.Application):
                         url_spec = cur_spec
                         break
         if url_spec is not None:
-            return urlparse.urljoin(
-                request.full_url(), url_spec.reverse(*args))
+            return http.urljoin(request.full_url(), url_spec.reverse(*args))
         return None
 
 
 application = Application()
 
 
+class Controller(helper.Controller):
+    VERSION = __version__
+
+    def __init__(self, *args):
+        super(Controller, self).__init__(*args)
+        self.io_loop = None
+
+    def run(self):
+        """Instantiate and start the IOLoop."""
+        LOGGER.info('%s v%s started', self.APPNAME, self.VERSION)
+        self.setup()
+        self.set_state(self.STATE_ACTIVE)
+        application.listen(7654)
+        self.io_loop = tornado.ioloop.IOLoop.instance()
+        self.io_loop.start()
+
+    def cleanup(self):
+        self.io_loop.stop()
+
+
 def main():
-    application.listen(7654)
-    tornado.ioloop.IOLoop.instance().start()
+    helper.start(Controller)

@@ -1,0 +1,106 @@
+#!/bin/sh
+# chkconfig: 2345 99 60
+# description: family-tree HTTP application
+# processname: family-tree-web
+# config: /etc/default/family-tree
+# pidfile: /var/run/family-tree-web.pid
+### BEGIN INIT INFO
+# Provides: family-tree
+# Short-Description: Control the family-tree applications
+# Description: Family-tree Application Suite
+# Required-Start: $local_fs $named $network $syslog $time
+# Required-Stop: $local_fs $network $syslog
+# Default-Start: 3 4 5
+# Default-Stop: 0 1 2 6
+### END INIT INFO
+
+# Source function library.
+. /lib/lsb/init-functions
+
+# Default Values
+# Override these in /etc/default/family-tree
+FAMILY_TREE_DIR='/opt/familytree'
+FAMILY_TREE_PID_FILE='/var/run/family-tree-web.pid'
+FAMILY_TREE_CONF="$FAMILY_TREE_DIR/etc/family-tree.yaml"
+FAMILY_TREE_USER='familytree'
+FAMILY_TREE_OPTS=''
+
+[ -e /etc/default/family-tree ] && . /etc/default/family-tree
+
+if [ ! -d "$FAMILY_TREE_DIR" ]; then
+  echo -n "cannot find family-tree installation dir: '$FAMILY_TREE_DIR'"
+  failure "cannot find family-tree installation dir: '$FAMILY_TREE_DIR'"
+  echo
+  exit 1
+fi
+
+PROGRAM_FILE='family-tree-web'
+DAEMON_PATH="$FAMILY_TREE_DIR/bin/$PROGRAM_FILE"
+DAEMON_OPTS=
+if [ -e "$FAMILY_TREE_CONF" ]; then
+  DAEMON_OPTS="$DAEMON_OPTS -c $FAMILY_TREE_CONF"
+fi
+DAEMON_OPTS="$DAEMON_OPTS $FAMILY_TREE_OPTS"
+
+PIDFILE=''
+for file in $FAMILY_TREE_PID_FILE /var/run/$PROGRAM_FILE.pid \
+  /var/run/$PROGRAM_FILE/$PROGRAM_FILE.pid /var/tmp/$PROGRAM_FILE.pid \
+  /tmp/$PROGRAM_FILE.pid
+do
+  if [ -e $file ]; then
+    read pid < $file
+    if [ -n "$pid" ]; then
+      if ps "$pid" > /dev/null 2>&1; then
+        PIDFILE=$file
+        break
+      fi
+    fi
+  fi
+done
+
+if [ -z "$PIDFILE" ]; then
+  PIDFILE=$FAMILY_TREE_PID_FILE
+fi
+
+
+case "$1" in
+start)
+  log_daemon_msg 'Starting Family Tree Suite'
+  log_progress_msg "$PROGRAM_FILE"
+  start_daemon -f -p $PIDFILE $DAEMON_PATH $DAEMON_OPTS
+  RETVAL=$?
+  log_end_msg $RETVAL
+  ;;
+
+stop)
+  log_daemon_msg 'Stopping Family Tree Suite'
+  log_progress_msg "$PROGRAM_FILE"
+  killproc -p $PIDFILE $DAEMON_PATH
+  RETVAL=$?
+  log_end_msg $RETVAL
+  ;;
+
+restart)
+  $0 stop
+  $0 start
+  RETVAL=$?
+  ;;
+
+status)
+  pids=`pidofproc -p $PIDFILE $DAEMON_PATH`
+  RETVAL=$?
+  if [ -n "$pids" ]; then
+    echo "$PROGRAM_FILE: running as:"
+	ps -p "$pids" -o pid,user,group,comm
+  else
+    echo "$PROGRAM_FILE: not running"
+  fi
+  ;;
+
+*)
+  echo "Usage: $0 {start|stop|status|restart}"
+  RETVAL=2
+  ;;
+esac
+
+exit $RETVAL
