@@ -7,6 +7,7 @@ A simple web service that manages genealogical data.
 .. toctree::
    :maxdepth: 2
 
+   information-model
    api
    full-http-api
    python
