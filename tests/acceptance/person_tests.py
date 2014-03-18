@@ -80,7 +80,6 @@ class WhenCreatingPerson(PersonApiMixin, PersonApiTestCase):
         )
 
 
-@unittest.skip
 class WhenFetchingCreatedPerson(PersonApiMixin, PersonApiTestCase):
     @classmethod
     def arrange(cls):
@@ -98,13 +97,12 @@ class WhenFetchingCreatedPerson(PersonApiMixin, PersonApiTestCase):
         self.assertEquals(self.response, self.person)
 
 
-@unittest.skip
 class WhenFetchingPerson(PersonApiMixin, PersonApiTestCase):
     @classmethod
     def arrange(cls):
         super(WhenFetchingPerson, cls).arrange()
         response = cls.post_json('person', cls.request_body)
-        cls.person_url = response.headers['Location']
+        cls.person_url = cls.last_response.headers['Location']
 
     @classmethod
     def act(cls):
