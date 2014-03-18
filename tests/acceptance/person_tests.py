@@ -1,6 +1,5 @@
 from __future__ import print_function
 
-import httplib
 import unittest
 
 from familytree.main import Application
@@ -28,7 +27,7 @@ class WhenCreatingPersonWithoutBody(PersonApiTestCase):
         cls.response = cls.post(cls.build_request('person', body=''))
 
     def should_fail_with_bad_request(self):
-        self.assertEquals(self.response.code, httplib.BAD_REQUEST)
+        self.assertEquals(self.response.code, 400)
 
 
 class WhenCreatingPersonWithoutDisplayName(PersonApiMixin, PersonApiTestCase):
@@ -42,7 +41,7 @@ class WhenCreatingPersonWithoutDisplayName(PersonApiMixin, PersonApiTestCase):
         cls.response = cls.post_json('person', cls.request_body)
 
     def should_fail_with_bad_request(self):
-        self.assertEquals(self.last_response.code, httplib.BAD_REQUEST)
+        self.assertEquals(self.last_response.code, 400)
 
 
 class WhenCreatingPersonWithUnrecognizedContentType(PersonApiTestCase):
@@ -56,7 +55,7 @@ class WhenCreatingPersonWithUnrecognizedContentType(PersonApiTestCase):
 
     def should_fail_with_invalid_content_type(self):
         self.assertEquals(
-            self.last_response.code, httplib.UNSUPPORTED_MEDIA_TYPE)
+            self.last_response.code, 415)
 
 
 class WhenCreatingPerson(PersonApiMixin, PersonApiTestCase):
@@ -65,7 +64,7 @@ class WhenCreatingPerson(PersonApiMixin, PersonApiTestCase):
         cls.response = cls.post_json('person', cls.request_body)
 
     def should_return_created_status(self):
-        self.assertEquals(self.last_response.code, httplib.CREATED)
+        self.assertEquals(self.last_response.code, 201)
 
     def should_return_person_with_display_name(self):
         self.assertEquals(self.response['display_name'], 'display name')
@@ -91,7 +90,7 @@ class WhenFetchingCreatedPerson(PersonApiMixin, PersonApiTestCase):
         cls.response = cls.get_json(cls.person['self'])
 
     def should_return_ok_status(self):
-        self.assertEquals(self.last_response.code, httplib.OK)
+        self.assertEquals(self.last_response.code, 200)
 
     def should_return_same_person(self):
         self.assertEquals(self.response, self.person)
@@ -109,7 +108,7 @@ class WhenFetchingPerson(PersonApiMixin, PersonApiTestCase):
         cls.response = cls.get_json(cls.person_url)
 
     def should_return_ok_status(self):
-        self.assertEquals(self.last_response.code, httplib.OK)
+        self.assertEquals(self.last_response.code, 200)
 
     def should_include_self_link(self):
         self.assertEquals(self.response['self'], self.person_url)
