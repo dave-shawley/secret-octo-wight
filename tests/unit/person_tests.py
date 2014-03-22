@@ -65,8 +65,9 @@ class WhenPersonHandlerGets(TornadoHandlerTestCase):
     @classmethod
     def arrange(cls):
         super(WhenPersonHandlerGets, cls).arrange()
+        cls.data_store = cls.patch('familytree.person.PEOPLE')
         cls.person_class = cls.patch('familytree.person.Person')
-        cls.person = cls.person_class.from_dictionary.return_value
+        cls.person = cls.data_store.__getitem__.return_value
         cls.handler = PersonHandler(cls.application, cls.request)
         cls.handler.serialize_model_instance = Mock()
 
@@ -74,8 +75,8 @@ class WhenPersonHandlerGets(TornadoHandlerTestCase):
     def act(cls):
         cls.response = cls.handler.get(sentinel.person_id)
 
-    def should_create_person_from_dictionary(self):
-        self.person_class.from_dictionary.assert_called_once_with(ANY)
+    def should_retrieve_person_from_data_store(self):
+        self.data_store.__getitem__.assert_called_once_with(sentinel.person_id)
 
     def should_serialize_model_instance(self):
         self.handler.serialize_model_instance.assert_called_once_with(

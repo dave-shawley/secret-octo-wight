@@ -1,7 +1,12 @@
+import uuid
+
 from tornado.web import HTTPError
 
 from . import handlers
 from .http import StatusCodes
+
+
+PEOPLE = {}
 
 
 class Person(object):
@@ -26,7 +31,10 @@ class Person(object):
         self.id = person_id
 
     def save(self):
-        self.id = '1'
+        if self.id is None:
+            global PEOPLE
+            self.id = uuid.uuid4().hex
+            PEOPLE[self.id] = self
 
     def as_dictionary(self):
         """Return a dictionary representation.
@@ -122,12 +130,7 @@ class PersonHandler(handlers.BaseHandler):
         :status 404: `person_id` refers to a non-existent person
 
         """
-        person = {
-            'id': person_id,
-            'display_name': 'display name',
-        }
-
-        a_person = Person.from_dictionary(person)
+        a_person = PEOPLE[person_id]
         self.serialize_model_instance(
             a_person,
             {
