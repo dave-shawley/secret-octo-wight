@@ -117,6 +117,10 @@ class TornadoTestCase(fluenttest.TestCase, unittest.TestCase):
         return cls._fetch('POST', request)
 
     @classmethod
+    def delete(cls, request):
+        return cls._fetch('DELETE', request)
+
+    @classmethod
     def build_request(cls, path, **kwargs):
         return HTTPRequest(http.urljoin(cls.my_url, path), **kwargs)
 

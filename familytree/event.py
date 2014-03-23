@@ -1,5 +1,7 @@
 import uuid
 
+from tornado import web
+
 from . import handlers
 from . import person
 from . import storage
@@ -82,7 +84,11 @@ class EventHandler(handlers.BaseHandler):
         :status 404: `event_id` refers to a non-existent event
 
         """
-        event = EVENTS[event_id]
+        try:
+            event = EVENTS[event_id]
+        except KeyError:
+            raise web.HTTPError(404)
+
         self.serialize_model_instance(
             event,
             {
@@ -94,3 +100,15 @@ class EventHandler(handlers.BaseHandler):
             model_handler=EventHandler,
         )
         self.set_status(200)
+
+    def delete(self, event_id):
+        """Delete a Event by unique identifier.
+
+        :param event_id: the unique identifier assigned to an event
+
+        :status 204: the requested event has been deleted
+        :status 404: `event_id` refers to a non-existent event
+
+        """
+        del EVENTS[event_id]
+        self.set_status(204)

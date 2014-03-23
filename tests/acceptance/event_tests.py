@@ -46,3 +46,38 @@ class WhenFetchingCreatedEvent(AcceptanceTestCase):
     def should_include_delete_action(self):
         self.assertDictContainsSubset(
             {'method': 'DELETE'}, self.event['actions']['delete-event'])
+
+
+class WhenDeletingEvent(AcceptanceTestCase):
+
+    @classmethod
+    def arrange(cls):
+        super(WhenDeletingEvent, cls).arrange()
+        cls.make_event(type='some event type')
+        cls.event_link = cls.last_response.headers['Location']
+        cls.event = cls.get_json(cls.event_link)
+
+    @classmethod
+    def act(cls):
+        cls.delete(cls.event['actions']['delete-event']['url'])
+
+    def should_return_no_content(self):
+        self.assertEqual(self.last_response.code, 204)
+
+
+class WhenFetchingDeletedEvent(AcceptanceTestCase):
+
+    @classmethod
+    def arrange(cls):
+        super(WhenFetchingDeletedEvent, cls).arrange()
+        cls.make_event(type='some event type')
+        cls.event_link = cls.header('Location')
+        event = cls.get_json(cls.event_link)
+        cls.delete(event['actions']['delete-event']['url'])
+
+    @classmethod
+    def act(cls):
+        cls.get(cls.event_link)
+
+    def should_return_not_found(self):
+        self.assertEqual(self.last_response.code, 404)
