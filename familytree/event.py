@@ -7,9 +7,6 @@ from . import person
 from . import storage
 
 
-EVENTS = {}
-
-
 class Event(object):
 
     """A Event is an interesting occurrence that involves people.
@@ -24,7 +21,7 @@ class Event(object):
     """
 
     def __init__(self):
-        self.id = uuid.uuid4().hex
+        self.id = None
         self.people = []
 
     def as_dictionary(self):
@@ -35,9 +32,8 @@ class Event(object):
 
     @classmethod
     def from_dictionary(cls, data):
-        if 'id' in data:
-            return EVENTS[data['id']]
         event = Event()
+        event.id = data.get('id')
         event.people.extend(a_person for a_person in data.get('people', []))
         return event
 
@@ -61,16 +57,26 @@ class CreateEventHandler(handlers.BaseHandler):
         :status 415: the enclosed media-type is not recognized
 
         """
-        global EVENTS
-
         event = self.deserialize_model_instance(Event)
-        EVENTS[event.id] = event
+        event.id = uuid.uuid4().hex
+        storage.save_item(event, event.id)
+
+        event_url = self.get_url_for(EventHandler, event.id)
         for person_url in event.people:
             person_id = person_url.split('/')[-1]
             a_person = storage.get_item(person.Person, person_id)
-            a_person.add_event(self.get_url_for(EventHandler, event.id))
-            storage.save_item(a_person, person_id)
-        self.serialize_model_instance(event, model_handler=EventHandler)
+            a_person.add_event(event_url)
+            storage.save_item(a_person, a_person.id)
+        self.serialize_model_instance(
+            event,
+            {
+                'name': 'delete-event',
+                'method': 'DELETE',
+                'handler': EventHandler,
+                'args': (event.id,)
+            },
+            model_handler=EventHandler,
+        )
         self.set_status(201)
 
 
@@ -90,8 +96,8 @@ class EventHandler(handlers.BaseHandler):
 
         """
         try:
-            event = EVENTS[event_id]
-        except KeyError:
+            event = storage.get_item(Event, event_id)
+        except storage.InstanceNotFound:
             raise web.HTTPError(404)
 
         self.serialize_model_instance(
@@ -115,5 +121,8 @@ class EventHandler(handlers.BaseHandler):
         :status 404: `event_id` refers to a non-existent event
 
         """
-        del EVENTS[event_id]
-        self.set_status(204)
+        try:
+            storage.delete_item(Event, event_id)
+            self.set_status(204)
+        except storage.InstanceNotFound:
+            raise web.HTTPError(404)
