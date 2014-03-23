@@ -245,3 +245,43 @@ class WhenConvertingFromDictionaryWithoutId(FromDictionaryTestCase):
     def should_populate_display_name(self):
         self.assertEqual(
             self.person.display_name, self.dict_repr['display_name'])
+
+
+###############################################################################
+### Person.add_event
+###############################################################################
+
+class WhenAddingEvent(fluenttest.TestCase):
+
+    @classmethod
+    def arrange(cls):
+        super(WhenAddingEvent, cls).arrange()
+        cls.person = Person(sentinel.display_name)
+        cls.person.events = Mock()
+
+    @classmethod
+    def act(cls):
+        cls.person.add_event(sentinel.event_url)
+
+    def should_append_new_event(self):
+        self.person.events.append(sentinel.event_url)
+
+
+###############################################################################
+### Person.remove_event
+###############################################################################
+
+class WhenRemovingEvent(fluenttest.TestCase):
+
+    @classmethod
+    def arrange(cls):
+        super(WhenRemovingEvent, cls).arrange()
+        cls.person = Person(sentinel.display_name)
+        cls.person.events = Mock()
+
+    @classmethod
+    def act(cls):
+        cls.person.remove_event(sentinel.event_url)
+
+    def should_remove_event_url(self):
+        self.person.events.remove.assert_called_once_with(sentinel.event_url)

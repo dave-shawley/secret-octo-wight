@@ -37,6 +37,15 @@ class Person(object):
         """
         self.events.append(event)
 
+    def remove_event(self, event):
+        """Remove an event associated with this person.
+
+        :param event: the event that this person was involved in
+        :raises ValueError: if `event` is not associated with this person
+
+        """
+        self.events.remove(event)
+
     def as_dictionary(self):
         """Return a dictionary representation.
 
