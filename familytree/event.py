@@ -65,6 +65,11 @@ class CreateEventHandler(handlers.BaseHandler):
 
         event = self.deserialize_model_instance(Event)
         EVENTS[event.id] = event
+        for person_url in event.people:
+            person_id = person_url.split('/')[-1]
+            a_person = storage.get_item(person.Person, person_id)
+            a_person.add_event(self.get_url_for(EventHandler, event.id))
+            storage.save_item(a_person, person_id)
         self.serialize_model_instance(event, model_handler=EventHandler)
         self.set_status(201)
 
