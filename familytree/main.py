@@ -6,6 +6,7 @@ import tornado.log
 import tornado.web
 
 from . import __version__
+from . import event
 from . import http
 from . import person
 
@@ -17,6 +18,8 @@ class Application(tornado.web.Application):
 
     def __init__(self):
         handlers = [
+            ('/event', event.CreateEventHandler),
+            ('/event/([a-f0-9]+)', event.EventHandler),
             ('/person', person.CreatePersonHandler),
             ('/person/([a-f0-9]+)', person.PersonHandler),
         ]
