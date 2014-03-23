@@ -4,7 +4,6 @@ import json
 import socket
 import sys
 import unittest
-import urlparse
 
 from tornado.ioloop import IOLoop
 from tornado.httpclient import AsyncHTTPClient, HTTPRequest
@@ -12,22 +11,24 @@ from tornado.httpserver import HTTPServer
 from werkzeug.http import parse_options_header
 import fluenttest
 
+from familytree import http
+
+
+if sys.version_info[0] < 3:
+    def is_string(obj):
+        return isinstance(obj, basestring)
+else:
+    def is_string(obj):
+        return isinstance(obj, str)
+
 
 def log(msg_format, *args, **kwargs):  # pragma nocover
     print(msg_format.format(*args, **kwargs), file=sys.stderr)
 
 
-def decode_json(response):
-    if not response.error:
-        content_type = parse_options_header(
-            response.headers.get('Content-Type', 'application/octet-stream'))
-        assert content_type[0] == 'application/json'
-        return json.loads(response.body)
-    return None
-
-
 class TornadoTestCase(fluenttest.TestCase, unittest.TestCase):
     show_trace = False
+    last_response = None
 
     @classmethod
     def make_application(cls):  # pragma nocover
@@ -45,10 +46,10 @@ class TornadoTestCase(fluenttest.TestCase, unittest.TestCase):
                 sock.listen(128)
             except IOError:
                 pass
-        sockaddr = sock.getsockname()
-        assert sockaddr[1] != 0
+        sock_address = sock.getsockname()
+        assert sock_address[1] != 0
 
-        cls.my_url = 'http://{0}:{1}'.format(*sockaddr)
+        cls.my_url = 'http://{0}:{1}'.format(*sock_address)
         cls.last_response = None
         cls.application = cls.make_application()
 
@@ -80,7 +81,7 @@ class TornadoTestCase(fluenttest.TestCase, unittest.TestCase):
                         log('HEADER: {0}: {1}', k, v)
             else:
                 log('stop called without arguments')
-        cls._result = result
+        cls._result = result  # curry result for use in _wait
 
     @classmethod
     def _wait(cls):
@@ -98,25 +99,42 @@ class TornadoTestCase(fluenttest.TestCase, unittest.TestCase):
         cls._result = None
 
     @classmethod
-    def get(cls, request):
-        request.method = 'GET'
+    def _fetch(cls, method, request):
+        cls.last_response, cls._result = None, None
+        if is_string(request):
+            request = cls.build_request(request)
+        request.method = method
         cls.client.fetch(request, callback=cls._stop)
         cls._wait()
         return cls.last_response
+
+    @classmethod
+    def get(cls, request):
+        return cls._fetch('GET', request)
 
     @classmethod
     def post(cls, request):
-        request.method = 'POST'
-        cls.client.fetch(request, callback=cls._stop)
-        cls._wait()
-        return cls.last_response
+        return cls._fetch('POST', request)
 
     @classmethod
     def build_request(cls, path, **kwargs):
-        return HTTPRequest(urlparse.urljoin(cls.my_url, path), **kwargs)
+        return HTTPRequest(http.urljoin(cls.my_url, path), **kwargs)
+
+    @classmethod
+    def header(cls, header_name, default_value=None):
+        return cls.last_response.headers.get(header_name, default_value)
 
 
 class JSONMixin(object):
+
+    @classmethod
+    def decode_json_response(cls):
+        if not cls.last_response.error:
+            content_type = parse_options_header(
+                cls.header('Content-Type', 'application/octet-stream'))
+            assert content_type[0].startswith('application/json')
+            return json.loads(cls.last_response.body)
+        return None
 
     @classmethod
     def build_request(cls, path, **kwargs):
@@ -128,9 +146,8 @@ class JSONMixin(object):
 
     @classmethod
     def get_json(cls, path):
-        request = cls.build_request(path)
-        response = cls.get(request)
-        return decode_json(response)
+        cls.get(path)
+        return cls.decode_json_response()
 
     @classmethod
     def post_json(cls, path, json_dict):
@@ -139,5 +156,5 @@ class JSONMixin(object):
             body=json_dict,
             headers={'Content-Type': 'application/json'},
         )
-        response = cls.post(request)
-        return decode_json(response)
+        cls.post(request)
+        return cls.decode_json_response()
