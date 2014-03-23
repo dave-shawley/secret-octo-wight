@@ -119,6 +119,9 @@ class WhenInitializingPerson(fluenttest.TestCase, unittest.TestCase):
     def act(cls):
         cls.person = Person(**cls.kwargs)
 
+    def should_not_have_events(self):
+        self.assertEqual(len(self.person.events), 0)
+
 
 class WhenInitializingPersonWithoutDisplayNameOrId(WhenInitializingPerson):
 
@@ -183,6 +186,9 @@ class WhenConvertingToDictionary(fluenttest.TestCase, unittest.TestCase):
     def should_populate_display_name(self):
         self.assertEqual(self.dict_repr['display_name'], sentinel.display_name)
 
+    def should_populate_events_list(self):
+        self.assertEqual(self.dict_repr['events'], self.person.events)
+
 
 ###############################################################################
 ### Person.from_dictionary
@@ -196,6 +202,7 @@ class FromDictionaryTestCase(fluenttest.TestCase, unittest.TestCase):
         cls.dict_repr = {
             'display_name': sentinel.display_name,
             'id': sentinel.person_id,
+            'events': [sentinel.event],
         }
 
     @classmethod
@@ -211,6 +218,9 @@ class WhenConvertingFromDictionary(FromDictionaryTestCase):
     def should_populate_display_name(self):
         self.assertEqual(
             self.person.display_name, self.dict_repr['display_name'])
+
+    def should_populate_events(self):
+        self.assertEqual(self.person.events, [sentinel.event])
 
 
 class WhenConvertingFromDictionaryWithoutDisplayName(FromDictionaryTestCase):

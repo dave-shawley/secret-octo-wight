@@ -27,7 +27,15 @@ class Person(object):
         super(Person, self).__init__()
         self.display_name = display_name
         self.id = person_id
+        self.events = []
 
+    def add_event(self, event):
+        """Associate an event with this person.
+
+        :param event: the event that this person was involved in
+
+        """
+        self.events.append(event)
 
     def as_dictionary(self):
         """Return a dictionary representation.
@@ -44,6 +52,7 @@ class Person(object):
         return {
             'display_name': self.display_name,
             'id': self.id,
+            'events': self.events,
         }
 
     @classmethod
@@ -53,16 +62,19 @@ class Person(object):
         :param dict person_data:
         :returns: a :class:`Person` instance
 
-        >>> data = {'display_name': 'some name', 'id': '1234'}
+        >>> data = {'display_name': 'some name', 'id': '1234', 'events': []}
         >>> person = Person.from_dictionary(data)
         >>> person.as_dictionary() == data
         True
 
         """
-        return Person(
+        person = Person(
             person_id=person_data.get('id'),
             display_name=person_data['display_name'],
         )
+        for event in person_data.get('events', []):
+            person.events.append(event)
+        return person
 
 
 class CreatePersonHandler(handlers.BaseHandler):
