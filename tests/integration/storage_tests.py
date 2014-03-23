@@ -6,6 +6,29 @@ import mock
 from familytree import storage
 
 
+class StorageTestCase(fluenttest.TestCase, unittest.TestCase):
+
+    @classmethod
+    def arrange(cls):
+        super(StorageTestCase, cls).arrange()
+        cls.storage_layer = cls.patch('familytree.storage._STORAGE')
+        cls.storage_type = mock.MagicMock()
+        cls.storage_item = mock.Mock()
+
+
+class MissingItemMixin(object):
+    allowed_exceptions = Exception
+
+    def should_raise_instance_not_found(self):
+        self.assertIsInstance(self.exception, storage.InstanceNotFound)
+
+    def should_include_model_instance_class_in_exception(self):
+        self.assertEqual(self.exception.model_class, self.storage_type)
+
+    def should_include_instance_id_in_exception(self):
+        self.assertEqual(self.exception.instance_id, mock.sentinel.item_id)
+
+
 ###############################################################################
 ### ModelInstance.as_dictionary
 ###############################################################################
@@ -50,13 +73,7 @@ class WhenCreatingInstanceFromDictionary(
 ### get_item
 ###############################################################################
 
-class WhenGettingItem(fluenttest.TestCase, unittest.TestCase):
-
-    @classmethod
-    def arrange(cls):
-        super(WhenGettingItem, cls).arrange()
-        cls.storage_layer = cls.patch('familytree.storage._STORAGE')
-        cls.storage_type = mock.MagicMock()
+class WhenGettingItem(StorageTestCase):
 
     @classmethod
     def act(cls):
@@ -75,51 +92,33 @@ class WhenGettingItem(fluenttest.TestCase, unittest.TestCase):
             self.item, self.storage_type.from_dictionary.return_value)
 
 
-class WhenGettingItemThatDoesNotExist(fluenttest.TestCase, unittest.TestCase):
-    allowed_exceptions = Exception
+class WhenGettingItemThatDoesNotExist(MissingItemMixin, StorageTestCase):
 
     @classmethod
     def arrange(cls):
         super(WhenGettingItemThatDoesNotExist, cls).arrange()
-        cls.storage_layer = cls.patch('familytree.storage._STORAGE')
         cls.storage_layer.__getitem__.side_effect = KeyError
-        cls.storage_type = mock.Mock()
 
     @classmethod
     def act(cls):
         storage.get_item(cls.storage_type, mock.sentinel.item_id)
-
-    def should_raise_instance_not_found(self):
-        self.assertIsInstance(self.exception, storage.InstanceNotFound)
-
-    def should_include_model_instance_class_in_exception(self):
-        self.assertEqual(self.exception.model_class, self.storage_type)
-
-    def should_include_instance_id_in_exception(self):
-        self.assertEqual(self.exception.instance_id, mock.sentinel.item_id)
 
 
 ###############################################################################
 ### save_item
 ###############################################################################
 
-class WhenSavingItem(fluenttest.TestCase, unittest.TestCase):
-
-    @classmethod
-    def arrange(cls):
-        super(WhenSavingItem, cls).arrange()
-        cls.storage_layer = cls.patch('familytree.storage._STORAGE')
-        cls.item = mock.Mock()
+class WhenSavingItem(StorageTestCase):
 
     @classmethod
     def act(cls):
-        storage.save_item(cls.item, mock.sentinel.item_id)
+        storage.save_item(cls.storage_item, mock.sentinel.item_id)
 
     def should_convert_item_to_dictionary(self):
-        self.item.as_dictionary.assert_called_once_with()
+        self.storage_item.as_dictionary.assert_called_once_with()
 
     def should_save_item(self):
         self.storage_layer.__setitem__.assert_called_once_with(
-            (str(self.item.__class__), mock.sentinel.item_id),
-            self.item.as_dictionary.return_value,
+            (str(self.storage_item.__class__), mock.sentinel.item_id),
+            self.storage_item.as_dictionary.return_value,
         )
