@@ -105,25 +105,41 @@ class WhenPersonHandlerGets(TornadoHandlerTestCase):
 ### Person.__init__
 ###############################################################################
 
-class WhenInitializingPersonWithoutDisplayNameOrId(
-        fluenttest.TestCase, unittest.TestCase):
+class WhenInitializingPerson(fluenttest.TestCase, unittest.TestCase):
+
+    @classmethod
+    def arrange(cls):
+        super(WhenInitializingPerson, cls).arrange()
+        cls.kwargs = {
+            'display_name': sentinel.display_name,
+            'person_id': sentinel.person_id,
+        }
+
+    @classmethod
+    def act(cls):
+        cls.person = Person(**cls.kwargs)
+
+
+class WhenInitializingPersonWithoutDisplayNameOrId(WhenInitializingPerson):
 
     allowed_exceptions = Exception
 
     @classmethod
-    def act(cls):
-        Person()
+    def arrange(cls):
+        super(WhenInitializingPersonWithoutDisplayNameOrId, cls).arrange()
+        del cls.kwargs['display_name']
+        del cls.kwargs['person_id']
 
     def should_raise_assertion_error(self):
         self.assertIsInstance(self.exception, AssertionError)
 
 
-class WhenInitializingPersonWithDisplayName(
-        fluenttest.TestCase, unittest.TestCase):
+class WhenInitializingPersonWithDisplayName(WhenInitializingPerson):
 
     @classmethod
-    def act(cls):
-        cls.person = Person(display_name=sentinel.display_name)
+    def arrange(cls):
+        super(WhenInitializingPersonWithDisplayName, cls).arrange()
+        del cls.kwargs['person_id']
 
     def should_save_display_name(self):
         self.assertEqual(self.person.display_name, sentinel.display_name)
@@ -132,14 +148,15 @@ class WhenInitializingPersonWithDisplayName(
         self.assertIsNone(self.person.id)
 
 
-class WhenInitializingPersonWithId(fluenttest.TestCase, unittest.TestCase):
+class WhenInitializingPersonWithId(WhenInitializingPerson):
 
     @classmethod
-    def act(cls):
-        cls.person = Person(person_id=sentinel.id)
+    def arrange(cls):
+        super(WhenInitializingPersonWithId, cls).arrange()
+        del cls.kwargs['display_name']
 
     def should_save_id(self):
-        self.assertEqual(self.person.id, sentinel.id)
+        self.assertEqual(self.person.id, sentinel.person_id)
 
 
 ###############################################################################
