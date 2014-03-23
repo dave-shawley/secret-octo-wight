@@ -1,6 +1,6 @@
 import unittest
 
-from mock import ANY, Mock, sentinel
+from mock import Mock, sentinel
 import fluenttest
 
 from familytree.person import (
@@ -20,6 +20,8 @@ class WhenPostingToCreatePersonHandler(TornadoHandlerTestCase):
     @classmethod
     def arrange(cls):
         super(WhenPostingToCreatePersonHandler, cls).arrange()
+        cls.storage = cls.patch('familytree.person.storage')
+        cls.uuid_module = cls.patch('familytree.person.uuid')
         cls.handler = CreatePersonHandler(cls.application, cls.request)
         cls.handler.deserialize_model_instance = Mock()
         cls.handler.serialize_model_instance = Mock()
@@ -35,8 +37,14 @@ class WhenPostingToCreatePersonHandler(TornadoHandlerTestCase):
         self.handler.deserialize_model_instance.assert_called_once_with(
             Person)
 
+    def should_generate_person_id(self):
+        self.uuid_module.uuid4.assert_called_once_with()
+
     def should_save_model_instance(self):
-        self.person.save.assert_called_once_with()
+        self.storage.save_item.assert_called_once_with(
+            self.handler.deserialize_model_instance.return_value,
+            self.uuid_module.uuid4.return_value.hex,
+        )
 
     def should_serialize_model_instance(self):
         self.handler.serialize_model_instance.assert_called_once_with(
@@ -65,8 +73,8 @@ class WhenPersonHandlerGets(TornadoHandlerTestCase):
     @classmethod
     def arrange(cls):
         super(WhenPersonHandlerGets, cls).arrange()
-        cls.person_class = cls.patch('familytree.person.Person')
-        cls.person = cls.person_class.from_dictionary.return_value
+        cls.storage = cls.patch('familytree.person.storage')
+        cls.person = cls.storage.get_item.return_value
         cls.handler = PersonHandler(cls.application, cls.request)
         cls.handler.serialize_model_instance = Mock()
 
@@ -74,8 +82,9 @@ class WhenPersonHandlerGets(TornadoHandlerTestCase):
     def act(cls):
         cls.response = cls.handler.get(sentinel.person_id)
 
-    def should_create_person_from_dictionary(self):
-        self.person_class.from_dictionary.assert_called_once_with(ANY)
+    def should_retrieve_person_from_data_store(self):
+        self.storage.get_item.assert_called_once_with(
+            Person, sentinel.person_id)
 
     def should_serialize_model_instance(self):
         self.handler.serialize_model_instance.assert_called_once_with(
