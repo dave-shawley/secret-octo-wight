@@ -122,3 +122,26 @@ class WhenSavingItem(StorageTestCase):
             (str(self.storage_item.__class__), mock.sentinel.item_id),
             self.storage_item.as_dictionary.return_value,
         )
+
+
+###############################################################################
+### delete_item
+###############################################################################
+
+class WhenDeletingItem(StorageTestCase):
+
+    @classmethod
+    def act(cls):
+        storage.delete_item(cls.storage_type, mock.sentinel.item_id)
+
+    def should_delete_item_by_key(self):
+        self.storage_layer.__delitem__.assert_called_once_with(
+            (str(self.storage_type), mock.sentinel.item_id))
+
+
+class WhenDeletingItemThatDoesNotExist(MissingItemMixin, WhenDeletingItem):
+
+    @classmethod
+    def arrange(cls):
+        super(WhenDeletingItemThatDoesNotExist, cls).arrange()
+        cls.storage_layer.__delitem__.side_effect = KeyError

@@ -93,3 +93,18 @@ def save_item(item, item_id):
     dict_repr = item.as_dictionary()
     key = (str(item.__class__), item_id)
     _STORAGE[key] = dict_repr
+
+
+def delete_item(item_type, item_id):
+    """Delete an item from the persistence layer.
+
+    :param type item_type: the type of item to retrieve
+    :param str item_id: the unique ID of the item to retrieve
+    :raises InstanceNotFound: when no instance exists with ``item_id``
+
+    """
+    key = (str(item_type), item_id)
+    try:
+        del _STORAGE[key]
+    except KeyError:
+        raise InstanceNotFound(item_type, item_id)
