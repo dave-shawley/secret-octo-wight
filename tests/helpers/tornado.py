@@ -73,10 +73,10 @@ class TornadoTestCase(fluenttest.TestCase, unittest.TestCase):
             if result:
                 if hasattr(result, 'request'):
                     log('REQUEST: {0.method} {0.url}', result.request)
-                if hasattr(cls._result, 'effective_url'):
+                if hasattr(result, 'effective_url'):
                     log('EFFECTIVE URL: {0}', result.effective_url)
-                if hasattr(cls._result, 'headers'):
-                    for k, v in result.headers.iteritems():
+                if hasattr(result, 'headers'):
+                    for k, v in result.headers.items():
                         log('HEADER: {0}: {1}', k, v)
             else:
                 log('stop called without arguments')
