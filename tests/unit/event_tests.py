@@ -5,7 +5,6 @@ import mock
 
 from familytree import event
 from familytree import person
-from familytree import storage
 from . import TornadoHandlerTestCase
 
 
@@ -132,51 +131,82 @@ class WhenEventHandlerGets(TornadoHandlerTestCase):
 ### EventHandler.delete
 ###############################################################################
 
-class WhenEventHandlerDeletes(TornadoHandlerTestCase):
+class EventHandlerDeleteTestCase(TornadoHandlerTestCase, unittest.TestCase):
 
     @classmethod
     def arrange(cls):
-        super(WhenEventHandlerDeletes, cls).arrange()
+        super(EventHandlerDeleteTestCase, cls).arrange()
         cls.storage = cls.patch('familytree.event.storage')
+        cls.target_event = mock.Mock()
+        cls.target_event.people = []
+        cls.get_item_returns = [cls.target_event]
+        cls.storage.get_item.side_effect = cls.get_item_returns
         cls.handler = event.EventHandler(cls.application, cls.request)
-        cls.handler.set_status = mock.Mock()
 
     @classmethod
     def act(cls):
         cls.response = cls.handler.delete(mock.sentinel.event_id)
 
+    def should_retrieve_event_from_data_store(self):
+        self.storage.get_item.assert_any_call(
+            event.Event, mock.sentinel.event_id)
+
     def should_delete_item_from_data_store(self):
         self.storage.delete_item.assert_called_once_with(
             event.Event, mock.sentinel.event_id)
+
+
+class WhenEventHandlerDeletes(EventHandlerDeleteTestCase):
+
+    @classmethod
+    def arrange(cls):
+        super(WhenEventHandlerDeletes, cls).arrange()
+        cls.handler.set_status = mock.Mock()
 
     def should_set_status_to_no_content(self):
         self.handler.set_status.assert_called_once_with(204)
 
 
-class WhenEventHandlerDeletesMissingItem(TornadoHandlerTestCase, unittest.TestCase):
+class WhenEventHandlerDeletesMissingItem(EventHandlerDeleteTestCase):
 
     allowed_exceptions = Exception
 
     @classmethod
     def arrange(cls):
         super(WhenEventHandlerDeletesMissingItem, cls).arrange()
-        cls.storage = cls.patch('familytree.event.storage')
         cls.storage.InstanceNotFound = RuntimeError
         cls.storage.delete_item.side_effect = RuntimeError
-
-        cls.handler = event.EventHandler(cls.application, cls.request)
-        cls.handler.set_status = mock.Mock()
-
-    @classmethod
-    def act(cls):
-        cls.response = cls.handler.delete(mock.sentinel.event_id)
-
-    def should_delete_item_from_data_store(self):
-        self.storage.delete_item.assert_called_once_with(
-            event.Event, mock.sentinel.event_id)
 
     def should_raise_http_error(self):
         self.assertIsInstance(self.exception, web.HTTPError)
 
     def should_raise_not_found(self):
         self.assertEqual(self.exception.status_code, 404)
+
+
+class WhenEventHandlerDeletesItemWithPeople(EventHandlerDeleteTestCase):
+
+    @classmethod
+    def arrange(cls):
+        super(WhenEventHandlerDeletesItemWithPeople, cls).arrange()
+        cls.person = mock.Mock()
+        cls.get_item_returns.append(cls.person)
+
+        cls.person_url = mock.Mock()
+        cls.person_url.rsplit.return_value = [
+            mock.sentinel.path, mock.sentinel.id]
+        cls.target_event.people.append(cls.person_url)
+
+    def should_extract_id_from_person_url(self):
+        self.person_url.rsplit.assert_called_once_with('/', 1)
+
+    def should_retrieve_person_from_data_store(self):
+        self.storage.get_item.assert_any_call(person.Person, mock.sentinel.id)
+
+    def should_remove_event_from_person(self):
+        self.person.remove_event.assert_called_once_with(
+            self.request.full_url.return_value)
+
+    def should_save_modified_person(self):
+        self.storage.save_item.assert_called_once_with(
+            self.person, self.person.id)

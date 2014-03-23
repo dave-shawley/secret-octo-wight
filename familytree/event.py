@@ -122,6 +122,12 @@ class EventHandler(handlers.BaseHandler):
 
         """
         try:
+            the_event = storage.get_item(Event, event_id)
+            for url in the_event.people:
+                path, person_id = url.rsplit('/', 1)
+                a_person = storage.get_item(person.Person, person_id)
+                a_person.remove_event(self.request.full_url())
+                storage.save_item(a_person, a_person.id)
             storage.delete_item(Event, event_id)
             self.set_status(204)
         except storage.InstanceNotFound:

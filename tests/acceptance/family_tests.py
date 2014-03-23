@@ -80,3 +80,29 @@ class WhenEventIsCreatedRelatedPeopleAreModified(AcceptanceTestCase):
 
     def should_include_event(self):
         self.assertIn(self.event_url, self.person['events'])
+
+
+class WhenDeletingFamilyEvent(AcceptanceTestCase):
+
+    @classmethod
+    def arrange(cls):
+        super(WhenDeletingFamilyEvent, cls).arrange()
+        person = cls.make_person(display_name='a person')
+        cls.person_url = person['self']
+        event = cls.make_event(type='family', people=[cls.person_url])
+        cls.event_url = event['self']
+
+    @classmethod
+    def act(cls):
+        cls.response = cls.delete(cls.event_url)
+
+    def should_return_no_content(self):
+        self.assertEqual(self.response.code, 204)
+
+    def should_delete_event(self):
+        response = self.get(self.event_url)
+        self.assertEqual(response.code, 404)
+
+    def should_remove_event_from_people(self):
+        person = self.get_json(self.person_url)
+        self.assertEqual(len(person['events']), 0)
