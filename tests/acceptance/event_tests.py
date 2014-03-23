@@ -1,14 +1,9 @@
 import mock
 
-from familytree import main
-from ..helpers import tornado
+from . import AcceptanceTestCase
 
 
-class WhenCreatingEvent(tornado.JSONMixin, tornado.TornadoTestCase):
-
-    @classmethod
-    def make_application(cls):
-        return main.Application()
+class WhenCreatingEvent(AcceptanceTestCase):
 
     @classmethod
     def arrange(cls):
@@ -30,16 +25,12 @@ class WhenCreatingEvent(tornado.JSONMixin, tornado.TornadoTestCase):
             self.last_response.headers['Location'], self.event['self'])
 
 
-class WhenFetchingCreatedEvent(tornado.JSONMixin, tornado.TornadoTestCase):
-
-    @classmethod
-    def make_application(cls):
-        return main.Application()
+class WhenFetchingCreatedEvent(AcceptanceTestCase):
 
     @classmethod
     def arrange(cls):
         super(WhenFetchingCreatedEvent, cls).arrange()
-        cls.post_json('event', {'type': 'some event type'})
+        cls.make_event(type='some event type')
         cls.event_link = cls.last_response.headers['Location']
 
     @classmethod

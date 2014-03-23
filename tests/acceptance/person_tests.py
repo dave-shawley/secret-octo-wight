@@ -1,23 +1,24 @@
-from familytree.main import Application
-from ..helpers.tornado import JSONMixin, TornadoTestCase
+from ..helpers import tornado
+from . import AcceptanceTestCase
+import familytree.main
 
 
-class PersonApiTestCase(TornadoTestCase):
-    @classmethod
-    def make_application(cls):
-        return Application()
+class PersonApiTestCase(AcceptanceTestCase):
 
-
-class PersonApiMixin(JSONMixin):
     @classmethod
     def arrange(cls):
-        super(PersonApiMixin, cls).arrange()
+        super(PersonApiTestCase, cls).arrange()
         cls.request_body = {
             'display_name': 'display name',
         }
 
 
-class WhenCreatingPersonWithoutBody(PersonApiTestCase):
+class WhenCreatingPersonWithoutBody(tornado.TornadoTestCase):
+
+    @classmethod
+    def make_application(cls):
+        return familytree.main.Application()
+
     @classmethod
     def act(cls):
         cls.response = cls.post(cls.build_request('person', body=''))
@@ -26,7 +27,8 @@ class WhenCreatingPersonWithoutBody(PersonApiTestCase):
         self.assertEquals(self.response.code, 400)
 
 
-class WhenCreatingPersonWithoutDisplayName(PersonApiMixin, PersonApiTestCase):
+class WhenCreatingPersonWithoutDisplayName(PersonApiTestCase):
+
     @classmethod
     def arrange(cls):
         super(WhenCreatingPersonWithoutDisplayName, cls).arrange()
@@ -40,7 +42,12 @@ class WhenCreatingPersonWithoutDisplayName(PersonApiMixin, PersonApiTestCase):
         self.assertEquals(self.last_response.code, 400)
 
 
-class WhenCreatingPersonWithUnrecognizedContentType(PersonApiTestCase):
+class WhenCreatingPersonWithUnrecognizedContentType(tornado.TornadoTestCase):
+
+    @classmethod
+    def make_application(cls):
+        return familytree.main.Application()
+
     @classmethod
     def act(cls):
         cls.response = cls.post(cls.build_request(
@@ -54,7 +61,8 @@ class WhenCreatingPersonWithUnrecognizedContentType(PersonApiTestCase):
             self.last_response.code, 415)
 
 
-class WhenCreatingPerson(PersonApiMixin, PersonApiTestCase):
+class WhenCreatingPerson(PersonApiTestCase):
+
     @classmethod
     def act(cls):
         cls.response = cls.post_json('person', cls.request_body)
@@ -75,7 +83,8 @@ class WhenCreatingPerson(PersonApiMixin, PersonApiTestCase):
         )
 
 
-class WhenFetchingCreatedPerson(PersonApiMixin, PersonApiTestCase):
+class WhenFetchingCreatedPerson(PersonApiTestCase):
+
     @classmethod
     def arrange(cls):
         super(WhenFetchingCreatedPerson, cls).arrange()
@@ -92,7 +101,8 @@ class WhenFetchingCreatedPerson(PersonApiMixin, PersonApiTestCase):
         self.assertEquals(self.response, self.person)
 
 
-class WhenFetchingPerson(PersonApiMixin, PersonApiTestCase):
+class WhenFetchingPerson(PersonApiTestCase):
+
     @classmethod
     def arrange(cls):
         super(WhenFetchingPerson, cls).arrange()
