@@ -45,7 +45,8 @@ class BaseHandler(RequestHandler):
         :param model_instance: instance of a *model* class that
             implements an ``as_dictionary`` method.
         :keyword RequestHandler model_handler: the Tornado handler that
-            *owns* the model instance.
+            *owns* the model instance.  If present, this parameter is
+            used to create the *self* link.
         :param actions: a list of actions represented as dictionary
             instances.
 

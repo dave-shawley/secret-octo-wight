@@ -1,7 +1,3 @@
-from __future__ import print_function
-
-import unittest
-
 from familytree.main import Application
 from ..helpers.tornado import JSONMixin, TornadoTestCase
 
@@ -100,7 +96,7 @@ class WhenFetchingPerson(PersonApiMixin, PersonApiTestCase):
     @classmethod
     def arrange(cls):
         super(WhenFetchingPerson, cls).arrange()
-        response = cls.post_json('person', cls.request_body)
+        cls.post_json('person', cls.request_body)
         cls.person_url = cls.last_response.headers['Location']
 
     @classmethod
