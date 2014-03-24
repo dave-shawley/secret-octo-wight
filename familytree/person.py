@@ -162,3 +162,18 @@ class PersonHandler(handlers.BaseHandler):
             model_handler=PersonHandler,
         )
         self.set_status(200)
+
+    def delete(self, person_id):
+        """Delete a Person
+
+        :param person_id: the unique identifier assigned to a person
+
+        :status 204: the requested person has been deleted
+        :status 404: `person_id` refers to a non-existent person
+
+        """
+        try:
+            storage.delete_item(Person, person_id)
+            self.set_status(204)
+        except storage.InstanceNotFound:
+            raise HTTPError(404)

@@ -127,6 +127,50 @@ class WhenPersonHandlerGetsNonexistentPerson(_PersonHandlerGetTestCase):
 
 
 ###############################################################################
+### PersonHandler.delete
+###############################################################################
+
+class _PersonHandlerDeleteTestCase(TornadoHandlerTestCase, unittest.TestCase):
+
+    @classmethod
+    def arrange(cls):
+        super(_PersonHandlerDeleteTestCase, cls).arrange()
+        cls.delete_item = cls.patch('familytree.person.storage.delete_item')
+        cls.handler = PersonHandler(cls.application, cls.request)
+
+    @classmethod
+    def act(cls):
+        cls.handler.delete(sentinel.person_id)
+
+    def should_call_delete_item(self):
+        self.delete_item.assert_called_once_with(Person, sentinel.person_id)
+
+
+class WhenPersonHandlerDeletes(_PersonHandlerDeleteTestCase):
+
+    @classmethod
+    def arrange(cls):
+        super(WhenPersonHandlerDeletes, cls).arrange()
+        cls.handler.set_status = Mock()
+
+    def should_set_status_to_no_content(self):
+        self.handler.set_status.assert_called_once_with(204)
+
+
+class WhenPersonHandlerDeletesNonexistentPerson(_PersonHandlerDeleteTestCase):
+
+    allowed_exceptions = web.HTTPError
+
+    @classmethod
+    def arrange(cls):
+        super(WhenPersonHandlerDeletesNonexistentPerson, cls).arrange()
+        cls.delete_item.side_effect = storage.InstanceNotFound(Mock(), '')
+
+    def should_raise_not_found(self):
+        self.assertEqual(self.exception.status_code, 404)
+
+
+###############################################################################
 ### Person.__init__
 ###############################################################################
 

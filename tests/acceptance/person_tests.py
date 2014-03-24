@@ -113,3 +113,23 @@ class WhenFetchingCreatedPerson(PersonApiTestCase):
             {'method': 'DELETE'},
             self.response['actions']['delete-person'],
         )
+
+
+class WhenDeletingPerson(PersonApiTestCase):
+
+    @classmethod
+    def arrange(cls):
+        super(WhenDeletingPerson, cls).arrange()
+        cls.person = cls.make_person(display_name='display name')
+
+    @classmethod
+    def act(cls):
+        cls.response = cls.delete(
+            cls.person['actions']['delete-person']['url'])
+
+    def should_return_no_content(self):
+        self.assertEqual(self.response.code, 204)
+
+    def should_return_not_found_after_delete(self):
+        response = self.get(self.person['self'])
+        self.assertEqual(response.code, 404)
