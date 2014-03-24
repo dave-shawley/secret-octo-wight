@@ -1,8 +1,10 @@
 import unittest
 
 from mock import Mock, sentinel
+from tornado import web
 import fluenttest
 
+from familytree import storage
 from familytree.person import (
     CreatePersonHandler,
     Person,
@@ -68,23 +70,30 @@ class WhenPostingToCreatePersonHandler(TornadoHandlerTestCase):
 ### PersonHandler.get()
 ###############################################################################
 
-class WhenPersonHandlerGets(TornadoHandlerTestCase):
+class _PersonHandlerGetTestCase(TornadoHandlerTestCase, unittest.TestCase):
 
     @classmethod
     def arrange(cls):
-        super(WhenPersonHandlerGets, cls).arrange()
-        cls.storage = cls.patch('familytree.person.storage')
-        cls.person = cls.storage.get_item.return_value
+        super(_PersonHandlerGetTestCase, cls).arrange()
+        cls.get_item = cls.patch('familytree.person.storage.get_item')
         cls.handler = PersonHandler(cls.application, cls.request)
-        cls.handler.serialize_model_instance = Mock()
 
     @classmethod
     def act(cls):
         cls.response = cls.handler.get(sentinel.person_id)
 
     def should_retrieve_person_from_data_store(self):
-        self.storage.get_item.assert_called_once_with(
-            Person, sentinel.person_id)
+        self.get_item.assert_called_once_with(Person, sentinel.person_id)
+
+
+class WhenPersonHandlerGets(_PersonHandlerGetTestCase):
+
+    @classmethod
+    def arrange(cls):
+        super(WhenPersonHandlerGets, cls).arrange()
+        cls.person = cls.get_item.return_value
+        cls.handler.serialize_model_instance = Mock()
+        cls.handler.set_status = Mock()
 
     def should_serialize_model_instance(self):
         self.handler.serialize_model_instance.assert_called_once_with(
@@ -99,6 +108,22 @@ class WhenPersonHandlerGets(TornadoHandlerTestCase):
             },
             model_handler=PersonHandler,
         )
+
+    def should_set_status_to_ok(self):
+        self.handler.set_status.assert_called_once_with(200)
+
+
+class WhenPersonHandlerGetsNonexistentPerson(_PersonHandlerGetTestCase):
+
+    allowed_exceptions = web.HTTPError
+
+    @classmethod
+    def arrange(cls):
+        super(WhenPersonHandlerGetsNonexistentPerson, cls).arrange()
+        cls.get_item.side_effect = storage.InstanceNotFound(Mock(), '')
+
+    def should_raise_not_found(self):
+        self.assertEqual(self.exception.status_code, 404)
 
 
 ###############################################################################

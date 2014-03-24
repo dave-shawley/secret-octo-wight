@@ -146,7 +146,11 @@ class PersonHandler(handlers.BaseHandler):
         :status 404: `person_id` refers to a non-existent person
 
         """
-        a_person = storage.get_item(Person, person_id)
+        try:
+            a_person = storage.get_item(Person, person_id)
+        except storage.InstanceNotFound:
+            raise HTTPError(404)
+
         self.serialize_model_instance(
             a_person,
             {
@@ -157,3 +161,4 @@ class PersonHandler(handlers.BaseHandler):
             },
             model_handler=PersonHandler,
         )
+        self.set_status(200)
