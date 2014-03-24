@@ -88,26 +88,8 @@ class WhenFetchingCreatedPerson(PersonApiTestCase):
     @classmethod
     def arrange(cls):
         super(WhenFetchingCreatedPerson, cls).arrange()
-        cls.person = cls.post_json('person', cls.request_body)
-
-    @classmethod
-    def act(cls):
-        cls.response = cls.get_json(cls.person['self'])
-
-    def should_return_ok_status(self):
-        self.assertEquals(self.last_response.code, 200)
-
-    def should_return_same_person(self):
-        self.assertEquals(self.response, self.person)
-
-
-class WhenFetchingPerson(PersonApiTestCase):
-
-    @classmethod
-    def arrange(cls):
-        super(WhenFetchingPerson, cls).arrange()
-        cls.post_json('person', cls.request_body)
-        cls.person_url = cls.last_response.headers['Location']
+        cls.person = cls.make_person(display_name='display name')
+        cls.person_url = cls.person['self']
 
     @classmethod
     def act(cls):
@@ -116,8 +98,15 @@ class WhenFetchingPerson(PersonApiTestCase):
     def should_return_ok_status(self):
         self.assertEquals(self.last_response.code, 200)
 
+    def should_return_created_person(self):
+        self.assertEquals(self.response, self.person)
+
     def should_include_self_link(self):
-        self.assertEquals(self.response['self'], self.person_url)
+        self.assertEqual(self.response['self'], self.person_url)
+
+    def should_include_location_header(self):
+        self.assertEqual(
+            self.last_response.headers['Location'], self.person_url)
 
     def should_include_delete_person_action(self):
         self.assertDictContainsSubset(
