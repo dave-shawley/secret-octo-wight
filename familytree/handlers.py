@@ -2,7 +2,7 @@ import json
 
 from tornado.web import RequestHandler, HTTPError
 
-from .http import StatusCodes
+from . import http
 
 
 class BaseHandler(RequestHandler):
@@ -19,9 +19,9 @@ class BaseHandler(RequestHandler):
 
     def require_request_body(self):
         if self.request.headers.get('Content-Length', '0') == '0':
-            raise HTTPError(StatusCodes.BAD_REQUEST)
+            raise HTTPError(http.BAD_REQUEST)
         if not self.request.body:
-            raise HTTPError(StatusCodes.BAD_REQUEST)
+            raise HTTPError(http.BAD_REQUEST)
 
     def deserialize_model_instance(self, model_class):
         """Parse the body into an instance of ``model_class``.
@@ -103,12 +103,12 @@ class BaseHandler(RequestHandler):
                 'application/octet-stream'
             )
             if content_type not in self.supported_media_types:
-                raise HTTPError(StatusCodes.UNSUPPORTED_MEDIA_TYPE)
+                raise HTTPError(http.UNSUPPORTED_MEDIA_TYPE)
             if content_type.startswith('application/json'):
                 self._request_body = json.loads(self.request.body)
             else:
                 raise HTTPError(
-                    StatusCodes.INTERNAL_SERVER_ERROR,
+                    http.INTERNAL_SERVER_ERROR,
                     reason='Unimplemented Content Type',
                     log_message='{0} is not implemented in {1}.{2}'.format(
                         content_type,

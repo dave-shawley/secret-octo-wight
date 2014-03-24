@@ -3,6 +3,7 @@ import uuid
 from tornado import web
 
 from . import handlers
+from . import http
 from . import person
 from . import storage
 
@@ -77,7 +78,7 @@ class CreateEventHandler(handlers.BaseHandler):
             },
             model_handler=EventHandler,
         )
-        self.set_status(201)
+        self.set_status(http.CREATED)
 
 
 class EventHandler(handlers.BaseHandler):
@@ -98,7 +99,7 @@ class EventHandler(handlers.BaseHandler):
         try:
             event = storage.get_item(Event, event_id)
         except storage.InstanceNotFound:
-            raise web.HTTPError(404)
+            raise web.HTTPError(http.NOT_FOUND)
 
         self.serialize_model_instance(
             event,
@@ -110,7 +111,7 @@ class EventHandler(handlers.BaseHandler):
             },
             model_handler=EventHandler,
         )
-        self.set_status(200)
+        self.set_status(http.OK)
 
     def delete(self, event_id):
         """Delete a Event by unique identifier.
@@ -129,6 +130,6 @@ class EventHandler(handlers.BaseHandler):
                 a_person.remove_event(self.request.full_url())
                 storage.save_item(a_person, a_person.id)
             storage.delete_item(Event, event_id)
-            self.set_status(204)
+            self.set_status(http.NO_CONTENT)
         except storage.InstanceNotFound:
-            raise web.HTTPError(404)
+            raise web.HTTPError(http.NOT_FOUND)

@@ -3,8 +3,8 @@ import uuid
 from tornado.web import HTTPError
 
 from . import handlers
+from . import http
 from . import storage
-from .http import StatusCodes
 
 
 class Person(object):
@@ -125,10 +125,10 @@ class CreatePersonHandler(handlers.BaseHandler):
                 },
                 model_handler=PersonHandler,
             )
-            self.set_status(StatusCodes.CREATED)
+            self.set_status(http.CREATED)
 
         except KeyError:
-            raise HTTPError(StatusCodes.BAD_REQUEST)
+            raise HTTPError(http.BAD_REQUEST)
 
 
 class PersonHandler(handlers.BaseHandler):
@@ -149,7 +149,7 @@ class PersonHandler(handlers.BaseHandler):
         try:
             a_person = storage.get_item(Person, person_id)
         except storage.InstanceNotFound:
-            raise HTTPError(404)
+            raise HTTPError(http.NOT_FOUND)
 
         self.serialize_model_instance(
             a_person,
@@ -161,7 +161,7 @@ class PersonHandler(handlers.BaseHandler):
             },
             model_handler=PersonHandler,
         )
-        self.set_status(200)
+        self.set_status(http.OK)
 
     def delete(self, person_id):
         """Delete a Person
@@ -174,6 +174,6 @@ class PersonHandler(handlers.BaseHandler):
         """
         try:
             storage.delete_item(Person, person_id)
-            self.set_status(204)
+            self.set_status(http.NO_CONTENT)
         except storage.InstanceNotFound:
-            raise HTTPError(404)
+            raise HTTPError(http.NOT_FOUND)
