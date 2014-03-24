@@ -24,7 +24,7 @@ class WhenCreatingPersonWithoutBody(tornado.TornadoTestCase):
         cls.response = cls.post(cls.build_request('person', body=''))
 
     def should_fail_with_bad_request(self):
-        self.assertEquals(self.response.code, 400)
+        self.assertEqual(self.response.code, 400)
 
 
 class WhenCreatingPersonWithoutDisplayName(PersonApiTestCase):
@@ -39,7 +39,7 @@ class WhenCreatingPersonWithoutDisplayName(PersonApiTestCase):
         cls.response = cls.post_json('person', cls.request_body)
 
     def should_fail_with_bad_request(self):
-        self.assertEquals(self.last_response.code, 400)
+        self.assertEqual(self.last_response.code, 400)
 
 
 class WhenCreatingPersonWithUnrecognizedContentType(tornado.TornadoTestCase):
@@ -57,7 +57,7 @@ class WhenCreatingPersonWithUnrecognizedContentType(tornado.TornadoTestCase):
         ))
 
     def should_fail_with_invalid_content_type(self):
-        self.assertEquals(
+        self.assertEqual(
             self.last_response.code, 415)
 
 
@@ -68,16 +68,16 @@ class WhenCreatingPerson(PersonApiTestCase):
         cls.response = cls.post_json('person', cls.request_body)
 
     def should_return_created_status(self):
-        self.assertEquals(self.last_response.code, 201)
+        self.assertEqual(self.last_response.code, 201)
 
     def should_return_person_with_display_name(self):
-        self.assertEquals(self.response['display_name'], 'display name')
+        self.assertEqual(self.response['display_name'], 'display name')
 
     def should_include_self_link(self):
         self.assertIn('self', self.response)
 
     def should_include_self_link_as_location_header(self):
-        self.assertEquals(
+        self.assertEqual(
             self.last_response.headers['Location'],
             self.response['self'],
         )
@@ -96,10 +96,10 @@ class WhenFetchingCreatedPerson(PersonApiTestCase):
         cls.response = cls.get_json(cls.person_url)
 
     def should_return_ok_status(self):
-        self.assertEquals(self.last_response.code, 200)
+        self.assertEqual(self.last_response.code, 200)
 
     def should_return_created_person(self):
-        self.assertEquals(self.response, self.person)
+        self.assertEqual(self.response, self.person)
 
     def should_include_self_link(self):
         self.assertEqual(self.response['self'], self.person_url)

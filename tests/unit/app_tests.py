@@ -35,7 +35,7 @@ class WhenApplicationIsCreated(fluenttest.TestCase, unittest.TestCase):
         self.fail('expected {0} to be installed'.format(handler_class))
 
     def should_call_tornado_init(self):
-        self.assertEquals(self.tornado_init.call_count, 1)
+        self.assertEqual(self.tornado_init.call_count, 1)
 
     def should_install_CreatePersonHandler(self):
         self.assert_was_installed(familytree.person.CreatePersonHandler)

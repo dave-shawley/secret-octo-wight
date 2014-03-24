@@ -82,7 +82,7 @@ class WhenRequiringRequestBodyWithEmptyBody(RequireRequestBodyTestCase):
         self.assertIsInstance(self.exception, HTTPError)
 
     def should_raise_bad_request(self):
-        self.assertEquals(self.exception.status_code, 400)
+        self.assertEqual(self.exception.status_code, 400)
 
 
 class WhenRequiringRequestBodyWithoutContentLength(RequireRequestBodyTestCase):
