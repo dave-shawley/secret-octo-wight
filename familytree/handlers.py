@@ -1,6 +1,7 @@
 import json
 
 from tornado.web import RequestHandler, HTTPError
+import werkzeug.http
 
 from . import http
 
@@ -98,10 +99,12 @@ class BaseHandler(RequestHandler):
         """
         if self._request_body is None:
             self.require_request_body()
-            content_type = self.request.headers.get(
+            full_content_type = self.request.headers.get(
                 'Content-Type',
                 'application/octet-stream'
             )
+            (content_type, _) = werkzeug.http.parse_options_header(
+                full_content_type)
             if content_type not in self.supported_media_types:
                 raise HTTPError(http.UNSUPPORTED_MEDIA_TYPE)
             if content_type.startswith('application/json'):
