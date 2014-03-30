@@ -1,8 +1,9 @@
 import json
 
 from tornado.web import RequestHandler, HTTPError
+import werkzeug.http
 
-from .http import StatusCodes
+from . import http
 
 
 class BaseHandler(RequestHandler):
@@ -19,9 +20,9 @@ class BaseHandler(RequestHandler):
 
     def require_request_body(self):
         if self.request.headers.get('Content-Length', '0') == '0':
-            raise HTTPError(StatusCodes.BAD_REQUEST)
+            raise HTTPError(http.BAD_REQUEST)
         if not self.request.body:
-            raise HTTPError(StatusCodes.BAD_REQUEST)
+            raise HTTPError(http.BAD_REQUEST)
 
     def deserialize_model_instance(self, model_class):
         """Parse the body into an instance of ``model_class``.
@@ -45,7 +46,8 @@ class BaseHandler(RequestHandler):
         :param model_instance: instance of a *model* class that
             implements an ``as_dictionary`` method.
         :keyword RequestHandler model_handler: the Tornado handler that
-            *owns* the model instance.
+            *owns* the model instance.  If present, this parameter is
+            used to create the *self* link.
         :param actions: a list of actions represented as dictionary
             instances.
 
@@ -97,17 +99,19 @@ class BaseHandler(RequestHandler):
         """
         if self._request_body is None:
             self.require_request_body()
-            content_type = self.request.headers.get(
+            full_content_type = self.request.headers.get(
                 'Content-Type',
                 'application/octet-stream'
             )
+            (content_type, _) = werkzeug.http.parse_options_header(
+                full_content_type)
             if content_type not in self.supported_media_types:
-                raise HTTPError(StatusCodes.UNSUPPORTED_MEDIA_TYPE)
+                raise HTTPError(http.UNSUPPORTED_MEDIA_TYPE)
             if content_type.startswith('application/json'):
                 self._request_body = json.loads(self.request.body)
             else:
                 raise HTTPError(
-                    StatusCodes.INTERNAL_SERVER_ERROR,
+                    http.INTERNAL_SERVER_ERROR,
                     reason='Unimplemented Content Type',
                     log_message='{0} is not implemented in {1}.{2}'.format(
                         content_type,

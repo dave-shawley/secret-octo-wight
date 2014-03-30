@@ -26,7 +26,7 @@ class TheControllerClass(unittest.TestCase):
         self.assertTrue(self.controller.is_subclass_of('helper.Controller'))
 
     def should_define_version_correctly(self):
-        self.assertEquals(self.controller.cls.VERSION, familytree.__version__)
+        self.assertEqual(self.controller.cls.VERSION, familytree.__version__)
 
 
 ###############################################################################

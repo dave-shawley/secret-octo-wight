@@ -82,7 +82,7 @@ class WhenRequiringRequestBodyWithEmptyBody(RequireRequestBodyTestCase):
         self.assertIsInstance(self.exception, HTTPError)
 
     def should_raise_bad_request(self):
-        self.assertEquals(self.exception.status_code, 400)
+        self.assertEqual(self.exception.status_code, 400)
 
 
 class WhenRequiringRequestBodyWithoutContentLength(RequireRequestBodyTestCase):
@@ -257,9 +257,12 @@ class _RequestBodyTestCase(BaseHandlerTestCase):
     @classmethod
     def arrange(cls):
         super(_RequestBodyTestCase, cls).arrange()
+        cls.parse_options_header = cls.patch(
+            'familytree.handlers.werkzeug.http.parse_options_header')
+
         cls.content_type = Mock()
-        cls._header_contents['Content-Length'] = 'non-zero value'
-        cls._header_contents['Content-Type'] = cls.content_type
+        cls.parse_options_header.return_value = (cls.content_type, {})
+        cls._header_contents['Content-Type'] = sentinel.full_content_type
 
         cls.handler.require_request_body = Mock()
 
@@ -276,6 +279,10 @@ class _RequestBodyTestCase(BaseHandlerTestCase):
     def should_verify_that_content_type_is_supported(self):
         self.supported_media_types.__contains__.assert_called_once_with(
             self.content_type)
+
+    def should_parse_content_type_header(self):
+        self.parse_options_header.assert_called_once_with(
+            sentinel.full_content_type)
 
 
 class WhenGeneratingRequestBodyFromJson(_RequestBodyTestCase):

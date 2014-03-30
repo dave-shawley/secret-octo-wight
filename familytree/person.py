@@ -1,7 +1,10 @@
+import uuid
+
 from tornado.web import HTTPError
 
 from . import handlers
-from .http import StatusCodes
+from . import http
+from . import storage
 
 
 class Person(object):
@@ -24,9 +27,24 @@ class Person(object):
         super(Person, self).__init__()
         self.display_name = display_name
         self.id = person_id
+        self.events = []
 
-    def save(self):
-        self.id = '1'
+    def add_event(self, event):
+        """Associate an event with this person.
+
+        :param event: the event that this person was involved in
+
+        """
+        self.events.append(event)
+
+    def remove_event(self, event):
+        """Remove an event associated with this person.
+
+        :param event: the event that this person was involved in
+        :raises ValueError: if `event` is not associated with this person
+
+        """
+        self.events.remove(event)
 
     def as_dictionary(self):
         """Return a dictionary representation.
@@ -43,6 +61,7 @@ class Person(object):
         return {
             'display_name': self.display_name,
             'id': self.id,
+            'events': self.events,
         }
 
     @classmethod
@@ -52,16 +71,19 @@ class Person(object):
         :param dict person_data:
         :returns: a :class:`Person` instance
 
-        >>> data = {'display_name': 'some name', 'id': '1234'}
+        >>> data = {'display_name': 'some name', 'id': '1234', 'events': []}
         >>> person = Person.from_dictionary(data)
         >>> person.as_dictionary() == data
         True
 
         """
-        return Person(
+        person = Person(
             person_id=person_data.get('id'),
             display_name=person_data['display_name'],
         )
+        for event in person_data.get('events', []):
+            person.events.append(event)
+        return person
 
 
 class CreatePersonHandler(handlers.BaseHandler):
@@ -90,7 +112,9 @@ class CreatePersonHandler(handlers.BaseHandler):
         """
         try:
             a_person = self.deserialize_model_instance(Person)
-            a_person.save()
+            a_person.id = uuid.uuid4().hex
+            storage.save_item(a_person, a_person.id)
+
             self.serialize_model_instance(
                 a_person,
                 {
@@ -101,10 +125,10 @@ class CreatePersonHandler(handlers.BaseHandler):
                 },
                 model_handler=PersonHandler,
             )
-            self.set_status(StatusCodes.CREATED)
+            self.set_status(http.CREATED)
 
         except KeyError:
-            raise HTTPError(StatusCodes.BAD_REQUEST)
+            raise HTTPError(http.BAD_REQUEST)
 
 
 class PersonHandler(handlers.BaseHandler):
@@ -122,12 +146,11 @@ class PersonHandler(handlers.BaseHandler):
         :status 404: `person_id` refers to a non-existent person
 
         """
-        person = {
-            'id': person_id,
-            'display_name': 'display name',
-        }
+        try:
+            a_person = storage.get_item(Person, person_id)
+        except storage.InstanceNotFound:
+            raise HTTPError(http.NOT_FOUND)
 
-        a_person = Person.from_dictionary(person)
         self.serialize_model_instance(
             a_person,
             {
@@ -138,3 +161,19 @@ class PersonHandler(handlers.BaseHandler):
             },
             model_handler=PersonHandler,
         )
+        self.set_status(http.OK)
+
+    def delete(self, person_id):
+        """Delete a Person
+
+        :param person_id: the unique identifier assigned to a person
+
+        :status 204: the requested person has been deleted
+        :status 404: `person_id` refers to a non-existent person
+
+        """
+        try:
+            storage.delete_item(Person, person_id)
+            self.set_status(http.NO_CONTENT)
+        except storage.InstanceNotFound:
+            raise HTTPError(http.NOT_FOUND)

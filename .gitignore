@@ -25,3 +25,9 @@ dist/
 reports/
 *.egg
 *.egg-info/
+
+#
+# Experimental Stuff
+#
+vagrant/
+familytree/cli/

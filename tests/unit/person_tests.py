@@ -1,8 +1,10 @@
 import unittest
 
-from mock import ANY, Mock, sentinel
+from mock import Mock, sentinel
+from tornado import web
 import fluenttest
 
+from familytree import storage
 from familytree.person import (
     CreatePersonHandler,
     Person,
@@ -20,6 +22,8 @@ class WhenPostingToCreatePersonHandler(TornadoHandlerTestCase):
     @classmethod
     def arrange(cls):
         super(WhenPostingToCreatePersonHandler, cls).arrange()
+        cls.storage = cls.patch('familytree.person.storage')
+        cls.uuid_module = cls.patch('familytree.person.uuid')
         cls.handler = CreatePersonHandler(cls.application, cls.request)
         cls.handler.deserialize_model_instance = Mock()
         cls.handler.serialize_model_instance = Mock()
@@ -35,8 +39,14 @@ class WhenPostingToCreatePersonHandler(TornadoHandlerTestCase):
         self.handler.deserialize_model_instance.assert_called_once_with(
             Person)
 
+    def should_generate_person_id(self):
+        self.uuid_module.uuid4.assert_called_once_with()
+
     def should_save_model_instance(self):
-        self.person.save.assert_called_once_with()
+        self.storage.save_item.assert_called_once_with(
+            self.handler.deserialize_model_instance.return_value,
+            self.uuid_module.uuid4.return_value.hex,
+        )
 
     def should_serialize_model_instance(self):
         self.handler.serialize_model_instance.assert_called_once_with(
@@ -60,22 +70,30 @@ class WhenPostingToCreatePersonHandler(TornadoHandlerTestCase):
 ### PersonHandler.get()
 ###############################################################################
 
-class WhenPersonHandlerGets(TornadoHandlerTestCase):
+class _PersonHandlerGetTestCase(TornadoHandlerTestCase, unittest.TestCase):
 
     @classmethod
     def arrange(cls):
-        super(WhenPersonHandlerGets, cls).arrange()
-        cls.person_class = cls.patch('familytree.person.Person')
-        cls.person = cls.person_class.from_dictionary.return_value
+        super(_PersonHandlerGetTestCase, cls).arrange()
+        cls.get_item = cls.patch('familytree.person.storage.get_item')
         cls.handler = PersonHandler(cls.application, cls.request)
-        cls.handler.serialize_model_instance = Mock()
 
     @classmethod
     def act(cls):
         cls.response = cls.handler.get(sentinel.person_id)
 
-    def should_create_person_from_dictionary(self):
-        self.person_class.from_dictionary.assert_called_once_with(ANY)
+    def should_retrieve_person_from_data_store(self):
+        self.get_item.assert_called_once_with(Person, sentinel.person_id)
+
+
+class WhenPersonHandlerGets(_PersonHandlerGetTestCase):
+
+    @classmethod
+    def arrange(cls):
+        super(WhenPersonHandlerGets, cls).arrange()
+        cls.person = cls.get_item.return_value
+        cls.handler.serialize_model_instance = Mock()
+        cls.handler.set_status = Mock()
 
     def should_serialize_model_instance(self):
         self.handler.serialize_model_instance.assert_called_once_with(
@@ -91,30 +109,109 @@ class WhenPersonHandlerGets(TornadoHandlerTestCase):
             model_handler=PersonHandler,
         )
 
+    def should_set_status_to_ok(self):
+        self.handler.set_status.assert_called_once_with(200)
+
+
+class WhenPersonHandlerGetsNonexistentPerson(_PersonHandlerGetTestCase):
+
+    allowed_exceptions = web.HTTPError
+
+    @classmethod
+    def arrange(cls):
+        super(WhenPersonHandlerGetsNonexistentPerson, cls).arrange()
+        cls.get_item.side_effect = storage.InstanceNotFound(Mock(), '')
+
+    def should_raise_not_found(self):
+        self.assertEqual(self.exception.status_code, 404)
+
+
+###############################################################################
+### PersonHandler.delete
+###############################################################################
+
+class _PersonHandlerDeleteTestCase(TornadoHandlerTestCase, unittest.TestCase):
+
+    @classmethod
+    def arrange(cls):
+        super(_PersonHandlerDeleteTestCase, cls).arrange()
+        cls.delete_item = cls.patch('familytree.person.storage.delete_item')
+        cls.handler = PersonHandler(cls.application, cls.request)
+
+    @classmethod
+    def act(cls):
+        cls.handler.delete(sentinel.person_id)
+
+    def should_call_delete_item(self):
+        self.delete_item.assert_called_once_with(Person, sentinel.person_id)
+
+
+class WhenPersonHandlerDeletes(_PersonHandlerDeleteTestCase):
+
+    @classmethod
+    def arrange(cls):
+        super(WhenPersonHandlerDeletes, cls).arrange()
+        cls.handler.set_status = Mock()
+
+    def should_set_status_to_no_content(self):
+        self.handler.set_status.assert_called_once_with(204)
+
+
+class WhenPersonHandlerDeletesNonexistentPerson(_PersonHandlerDeleteTestCase):
+
+    allowed_exceptions = web.HTTPError
+
+    @classmethod
+    def arrange(cls):
+        super(WhenPersonHandlerDeletesNonexistentPerson, cls).arrange()
+        cls.delete_item.side_effect = storage.InstanceNotFound(Mock(), '')
+
+    def should_raise_not_found(self):
+        self.assertEqual(self.exception.status_code, 404)
+
 
 ###############################################################################
 ### Person.__init__
 ###############################################################################
 
-class WhenInitializingPersonWithoutDisplayNameOrId(
-        fluenttest.TestCase, unittest.TestCase):
+class WhenInitializingPerson(fluenttest.TestCase, unittest.TestCase):
+
+    @classmethod
+    def arrange(cls):
+        super(WhenInitializingPerson, cls).arrange()
+        cls.kwargs = {
+            'display_name': sentinel.display_name,
+            'person_id': sentinel.person_id,
+        }
+
+    @classmethod
+    def act(cls):
+        cls.person = Person(**cls.kwargs)
+
+    def should_not_have_events(self):
+        self.assertEqual(len(self.person.events), 0)
+
+
+class WhenInitializingPersonWithoutDisplayNameOrId(WhenInitializingPerson):
 
     allowed_exceptions = Exception
 
     @classmethod
-    def act(cls):
-        Person()
+    def arrange(cls):
+        super(WhenInitializingPersonWithoutDisplayNameOrId, cls).arrange()
+        del cls.kwargs['display_name']
+        del cls.kwargs['person_id']
 
     def should_raise_assertion_error(self):
         self.assertIsInstance(self.exception, AssertionError)
 
 
-class WhenInitializingPersonWithDisplayName(
-        fluenttest.TestCase, unittest.TestCase):
+class WhenInitializingPersonWithDisplayName(WhenInitializingPerson):
 
     @classmethod
-    def act(cls):
-        cls.person = Person(display_name=sentinel.display_name)
+    def arrange(cls):
+        super(WhenInitializingPersonWithDisplayName, cls).arrange()
+        del cls.kwargs['person_id']
 
     def should_save_display_name(self):
         self.assertEqual(self.person.display_name, sentinel.display_name)
@@ -123,14 +220,15 @@ class WhenInitializingPersonWithDisplayName(
         self.assertIsNone(self.person.id)
 
 
-class WhenInitializingPersonWithId(fluenttest.TestCase, unittest.TestCase):
+class WhenInitializingPersonWithId(WhenInitializingPerson):
 
     @classmethod
-    def act(cls):
-        cls.person = Person(person_id=sentinel.id)
+    def arrange(cls):
+        super(WhenInitializingPersonWithId, cls).arrange()
+        del cls.kwargs['display_name']
 
     def should_save_id(self):
-        self.assertEqual(self.person.id, sentinel.id)
+        self.assertEqual(self.person.id, sentinel.person_id)
 
 
 ###############################################################################
@@ -157,6 +255,9 @@ class WhenConvertingToDictionary(fluenttest.TestCase, unittest.TestCase):
     def should_populate_display_name(self):
         self.assertEqual(self.dict_repr['display_name'], sentinel.display_name)
 
+    def should_populate_events_list(self):
+        self.assertEqual(self.dict_repr['events'], self.person.events)
+
 
 ###############################################################################
 ### Person.from_dictionary
@@ -170,6 +271,7 @@ class FromDictionaryTestCase(fluenttest.TestCase, unittest.TestCase):
         cls.dict_repr = {
             'display_name': sentinel.display_name,
             'id': sentinel.person_id,
+            'events': [sentinel.event],
         }
 
     @classmethod
@@ -185,6 +287,9 @@ class WhenConvertingFromDictionary(FromDictionaryTestCase):
     def should_populate_display_name(self):
         self.assertEqual(
             self.person.display_name, self.dict_repr['display_name'])
+
+    def should_populate_events(self):
+        self.assertEqual(self.person.events, [sentinel.event])
 
 
 class WhenConvertingFromDictionaryWithoutDisplayName(FromDictionaryTestCase):
@@ -209,3 +314,43 @@ class WhenConvertingFromDictionaryWithoutId(FromDictionaryTestCase):
     def should_populate_display_name(self):
         self.assertEqual(
             self.person.display_name, self.dict_repr['display_name'])
+
+
+###############################################################################
+### Person.add_event
+###############################################################################
+
+class WhenAddingEvent(fluenttest.TestCase):
+
+    @classmethod
+    def arrange(cls):
+        super(WhenAddingEvent, cls).arrange()
+        cls.person = Person(sentinel.display_name)
+        cls.person.events = Mock()
+
+    @classmethod
+    def act(cls):
+        cls.person.add_event(sentinel.event_url)
+
+    def should_append_new_event(self):
+        self.person.events.append(sentinel.event_url)
+
+
+###############################################################################
+### Person.remove_event
+###############################################################################
+
+class WhenRemovingEvent(fluenttest.TestCase):
+
+    @classmethod
+    def arrange(cls):
+        super(WhenRemovingEvent, cls).arrange()
+        cls.person = Person(sentinel.display_name)
+        cls.person.events = Mock()
+
+    @classmethod
+    def act(cls):
+        cls.person.remove_event(sentinel.event_url)
+
+    def should_remove_event_url(self):
+        self.person.events.remove.assert_called_once_with(sentinel.event_url)
