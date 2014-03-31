@@ -137,7 +137,7 @@ class JSONMixin(object):
             content_type = parse_options_header(
                 cls.header('Content-Type', 'application/octet-stream'))
             assert content_type[0].startswith('application/json')
-            return json.loads(cls.last_response.body)
+            return json.loads(cls.last_response.body.decode('utf-8'))
         return None
 
     @classmethod

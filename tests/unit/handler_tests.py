@@ -261,7 +261,9 @@ class _RequestBodyTestCase(BaseHandlerTestCase):
             'familytree.handlers.werkzeug.http.parse_options_header')
 
         cls.content_type = Mock()
-        cls.parse_options_header.return_value = (cls.content_type, {})
+        cls.content_options = Mock()
+        cls.parse_options_header.return_value = (
+            cls.content_type, cls.content_options)
         cls._header_contents['Content-Type'] = sentinel.full_content_type
 
         cls.handler.require_request_body = Mock()
@@ -297,8 +299,17 @@ class WhenGeneratingRequestBodyFromJson(_RequestBodyTestCase):
     def should_check_for_json_content_type(self):
         self.content_type.startswith.assert_any_call('application/json')
 
+    def should_retrieve_charset(self):
+        self.content_options.get.assert_called_once_with(
+            'charset', 'utf-8')
+
+    def should_decode_request_body(self):
+        self.handler.request.body.decode.assert_called_once_with(
+            self.content_options.get.return_value)
+
     def should_load_json_body(self):
-        self.json_loads.assert_called_once_with(self.handler.request.body)
+        self.json_loads.assert_called_once_with(
+            self.handler.request.body.decode.return_value)
 
     def should_return_json_result(self):
         self.assertEqual(self.returned, self.json_loads.return_value)
