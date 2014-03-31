@@ -9,6 +9,7 @@ REPORTDIR = reports
 RM ?= rm -f
 RMDIR ?= rm -fr
 STATEDIR = .state
+TOX = $(ENVDIR)/bin/tox
 
 
 export NOSE_COVER_TEXT=no
@@ -19,11 +20,11 @@ export NOSE_COVER_TEXT=no
 .PHONY: test coverage
 
 test: environment
-	$(PYTHON) setup.py nosetests $(COVERAGE_ARGS)
+	$(TOX)
 
-coverage: COVERAGE_ARGS=--with-coverage
-coverage: test
+coverage:
 	@- $(RM) -r $(REPORTDIR)/coverage
+	$(TOX) -e py27 -- --with-coverage --cover-package=familytree,tests
 	$(COVERAGE) html '--omit=$(ENVDIR)/*' --directory=$(REPORTDIR)/coverage
 
 #

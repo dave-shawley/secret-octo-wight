@@ -25,6 +25,7 @@ dist/
 reports/
 *.egg
 *.egg-info/
+.tox/
 
 #
 # Experimental Stuff
