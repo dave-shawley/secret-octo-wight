@@ -1,11 +1,10 @@
-import unittest
-
 from tornado import web
-import mock
 
 from familytree import event
 from familytree import person
 from . import TornadoHandlerTestCase
+from ..helpers.compat import mock
+from ..helpers.compat import unittest
 
 
 ###############################################################################

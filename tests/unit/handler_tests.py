@@ -1,10 +1,9 @@
-import unittest
-
-from mock import sentinel, Mock, MagicMock, PropertyMock
 from tornado.web import HTTPError
 
 from familytree.handlers import BaseHandler
 from . import TornadoHandlerTestCase
+from ..helpers.compat import mock
+from ..helpers.compat import unittest
 
 
 class BaseHandlerTestCase(TornadoHandlerTestCase, unittest.TestCase):
@@ -13,7 +12,7 @@ class BaseHandlerTestCase(TornadoHandlerTestCase, unittest.TestCase):
     def arrange(cls):
         super(BaseHandlerTestCase, cls).arrange()
         cls._header_contents = {}
-        cls.request.headers = Mock()
+        cls.request.headers = mock.Mock()
         cls.request.headers.get.side_effect = cls._header_contents.get
 
         cls.handler = BaseHandler(cls.application, cls.request)
@@ -28,16 +27,17 @@ class WhenGettingUrlFromBaseHandler(BaseHandlerTestCase):
     @classmethod
     def arrange(cls):
         super(WhenGettingUrlFromBaseHandler, cls).arrange()
-        cls.args = (sentinel.arg1, sentinel.arg2)
+        cls.args = (mock.sentinel.arg1, mock.sentinel.arg2)
 
     @classmethod
     def act(cls):
-        cls.returned = cls.handler.get_url_for(sentinel.handler, *cls.args)
+        cls.returned = cls.handler.get_url_for(
+            mock.sentinel.handler, *cls.args)
 
     def should_get_url_from_application(self):
         self.application.get_url_for.assert_called_once_with(
             self.request,
-            sentinel.handler,
+            mock.sentinel.handler,
             *self.args
         )
 
@@ -106,11 +106,11 @@ class _SerializeModelInstanceTestCase(BaseHandlerTestCase):
     @classmethod
     def arrange(cls):
         super(_SerializeModelInstanceTestCase, cls).arrange()
-        cls.model_instance = Mock()
-        cls.model_representation = MagicMock()
+        cls.model_instance = mock.Mock()
+        cls.model_representation = mock.MagicMock()
         cls.json_dumps = cls.patch('familytree.handlers.json').dumps
-        cls.handler.set_header = Mock()
-        cls.handler.write = Mock()
+        cls.handler.set_header = mock.Mock()
+        cls.handler.write = mock.Mock()
         cls.model_instance.as_dictionary.return_value = (
             cls.model_representation)
 
@@ -142,8 +142,8 @@ class WhenSerializingModelInstanceWithHandlerSpecified(
     @classmethod
     def arrange(cls):
         super(WhenSerializingModelInstanceWithHandlerSpecified, cls).arrange()
-        cls.model_handler = Mock()
-        cls.handler.get_url_for = Mock()
+        cls.model_handler = mock.Mock()
+        cls.handler.get_url_for = mock.Mock()
 
     @classmethod
     def act(cls):
@@ -174,20 +174,20 @@ class WhenSerializingModelInstanceWithActions(_SerializeModelInstanceTestCase):
     def arrange(cls):
         super(WhenSerializingModelInstanceWithActions, cls).arrange()
         cls.action_dict = {
-            'name': sentinel.action_name,
-            'method': sentinel.action_method,
-            'handler': sentinel.action_handler,
-            'args': (sentinel.arg1, sentinel.arg2,),
+            'name': mock.sentinel.action_name,
+            'method': mock.sentinel.action_method,
+            'handler': mock.sentinel.action_handler,
+            'args': (mock.sentinel.arg1, mock.sentinel.arg2,),
         }
-        cls.action = MagicMock()
+        cls.action = mock.MagicMock()
         cls.action.__getitem__.side_effect = cls.action_dict.get
-        cls.handler.get_url_for = Mock()
+        cls.handler.get_url_for = mock.Mock()
         cls.action_card = cls.model_representation.setdefault.return_value
 
     @classmethod
     def act(cls):
         cls.returned = cls.handler.serialize_model_instance(
-            cls.model_instance, MagicMock(), MagicMock(), cls.action)
+            cls.model_instance, mock.MagicMock(), mock.MagicMock(), cls.action)
 
     def should_create_action_card(self):
         self.model_representation.setdefault.assert_any_call('actions', {})
@@ -229,10 +229,10 @@ class WhenDeserializingModelInstance(BaseHandlerTestCase):
     @classmethod
     def arrange(cls):
         super(WhenDeserializingModelInstance, cls).arrange()
-        cls.model_class = Mock()
+        cls.model_class = mock.Mock()
         cls.request_body_property = cls.patch(
             'familytree.handlers.BaseHandler.request_body',
-            new_callable=PropertyMock,
+            new_callable=mock.PropertyMock,
         )
 
     @classmethod
@@ -260,15 +260,15 @@ class _RequestBodyTestCase(BaseHandlerTestCase):
         cls.parse_options_header = cls.patch(
             'familytree.handlers.werkzeug.http.parse_options_header')
 
-        cls.content_type = Mock()
-        cls.content_options = Mock()
+        cls.content_type = mock.Mock()
+        cls.content_options = mock.Mock()
         cls.parse_options_header.return_value = (
             cls.content_type, cls.content_options)
-        cls._header_contents['Content-Type'] = sentinel.full_content_type
+        cls._header_contents['Content-Type'] = mock.sentinel.full_content_type
 
-        cls.handler.require_request_body = Mock()
+        cls.handler.require_request_body = mock.Mock()
 
-        cls.supported_media_types = MagicMock()
+        cls.supported_media_types = mock.MagicMock()
         cls.handler.supported_media_types = cls.supported_media_types
 
     @classmethod
@@ -284,7 +284,7 @@ class _RequestBodyTestCase(BaseHandlerTestCase):
 
     def should_parse_content_type_header(self):
         self.parse_options_header.assert_called_once_with(
-            sentinel.full_content_type)
+            mock.sentinel.full_content_type)
 
 
 class WhenGeneratingRequestBodyFromJson(_RequestBodyTestCase):

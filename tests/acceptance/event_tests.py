@@ -1,6 +1,5 @@
-import mock
-
 from . import AcceptanceTestCase
+from ..helpers.compat import mock
 
 
 class WhenCreatingEvent(AcceptanceTestCase):

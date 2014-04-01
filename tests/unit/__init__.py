@@ -1,5 +1,6 @@
-from mock import Mock
 import fluenttest
+
+from ..helpers.compat import mock
 
 
 class TornadoHandlerTestCase(fluenttest.TestCase):
@@ -7,8 +8,8 @@ class TornadoHandlerTestCase(fluenttest.TestCase):
     @classmethod
     def arrange(cls):
         super(TornadoHandlerTestCase, cls).arrange()
-        cls.application = Mock()
+        cls.application = mock.Mock()
         cls.application.ui_methods = {}
 
-        cls.request = Mock()
+        cls.request = mock.Mock()
         cls.request.headers = {}

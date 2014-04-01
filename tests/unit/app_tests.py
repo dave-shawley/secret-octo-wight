@@ -1,9 +1,8 @@
-import unittest
-
-from mock import Mock, sentinel
 import fluenttest
 
 from familytree.main import Application, main
+from ..helpers.compat import mock
+from ..helpers.compat import unittest
 import familytree.person
 
 
@@ -65,20 +64,20 @@ class _GetUrlForTestCase(fluenttest.TestCase, unittest.TestCase):
     def arrange(cls):
         super(_GetUrlForTestCase, cls).arrange()
 
-        cls.request = Mock()
-        cls.handler_urlspec = Mock()
+        cls.request = mock.Mock()
+        cls.handler_urlspec = mock.Mock()
 
         cls.application = Application()
-        cls.application.named_handlers = Mock()
+        cls.application.named_handlers = mock.Mock()
 
     @classmethod
     def act(cls):
         cls.result = cls.application.get_url_for(
-            cls.request, sentinel.handler)
+            cls.request, mock.sentinel.handler)
 
     def should_lookup_named_handler(self):
         self.application.named_handlers.get.assert_called_once_with(
-            sentinel.handler)
+            mock.sentinel.handler)
 
 
 class _SuccessfulGetUrlForTestCase(_GetUrlForTestCase):
@@ -117,10 +116,10 @@ class WhenGettingUrlForClass(_SuccessfulGetUrlForTestCase):
     @classmethod
     def arrange(cls):
         super(WhenGettingUrlForClass, cls).arrange()
-        cls.handler_urlspec.handler_class = sentinel.handler
+        cls.handler_urlspec.handler_class = mock.sentinel.handler
         cls.application.named_handlers.get.return_value = None
         cls.application.handlers = [
-            (sentinel.host_pattern, [cls.handler_urlspec]),
+            (mock.sentinel.host_pattern, [cls.handler_urlspec]),
         ]
 
 
@@ -130,9 +129,9 @@ class WhenGettingUrlForMissingClass(_GetUrlForTestCase):
     def arrange(cls):
         super(WhenGettingUrlForMissingClass, cls).arrange()
         cls.application.named_handlers.get.return_value = None
-        cls.handler_urlspec.handler_class = sentinel.other_handler
+        cls.handler_urlspec.handler_class = mock.sentinel.other_handler
         cls.application.handlers = [
-            (sentinel.host_pattern, [cls.handler_urlspec]),
+            (mock.sentinel.host_pattern, [cls.handler_urlspec]),
         ]
 
     def should_return_none(self):
