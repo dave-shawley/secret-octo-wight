@@ -1,3 +1,8 @@
+TARGET_PYTHON = python3.3
+TARGET_TOX = py33
+DOWNLOAD ?= curl -sL
+PIP_LOCATION = https://raw.github.com/pypa/pip/master/contrib/get-pip.py
+
 BUILDDIR = build
 COVERAGE = $(ENVDIR)/bin/coverage
 DISTDIR ?= dist
@@ -24,7 +29,7 @@ test: environment
 
 coverage:
 	@- $(RM) -r $(REPORTDIR)/coverage
-	$(TOX) -e py27 -- --with-coverage --cover-package=familytree,tests
+	$(TOX) -e $(TARGET_TOX) -- --with-coverage --cover-package=familytree,tests
 	$(COVERAGE) html '--omit=$(ENVDIR)/*' --directory=$(REPORTDIR)/coverage
 
 #
@@ -35,7 +40,8 @@ coverage:
 environment: $(STATEDIR) $(STATEDIR)/virtualenv $(STATEDIR)/requirements-installed
 
 $(STATEDIR)/virtualenv:
-	virtualenv --prompt='{family-tree}' $(ENVDIR)
+	virtualenv --python=$(TARGET_PYTHON) --prompt='{family-tree}' --no-setuptools --no-pip $(ENVDIR)
+	$(DOWNLOAD) "$(PIP_LOCATION)" | $(ENVDIR)/bin/python
 	touch "$@"
 
 $(STATEDIR)/requirements-installed: $(STATEDIR)/requirements.txt
@@ -56,6 +62,7 @@ $(STATEDIR) $(DISTDIR):
 clean:
 	- $(RM) .coverage
 	- $(FIND) . -name '*.pyc' -delete
+	- $(FIND) . -name '__pycache__' -delete
 
 dist-clean: clean
 	- $(RMDIR) $(BUILDDIR) $(REPORTDIR) $(DISTDIR) *.egg-info
