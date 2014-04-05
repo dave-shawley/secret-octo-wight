@@ -1,3 +1,8 @@
+TARGET_PYTHON = python3.3
+TARGET_TOX = py33
+DOWNLOAD ?= curl -sL
+PIP_LOCATION = https://raw.github.com/pypa/pip/master/contrib/get-pip.py
+
 BUILDDIR = build
 COVERAGE = $(ENVDIR)/bin/coverage
 DISTDIR ?= dist
@@ -9,6 +14,7 @@ REPORTDIR = reports
 RM ?= rm -f
 RMDIR ?= rm -fr
 STATEDIR = .state
+TOX = $(ENVDIR)/bin/tox
 
 
 export NOSE_COVER_TEXT=no
@@ -19,11 +25,11 @@ export NOSE_COVER_TEXT=no
 .PHONY: test coverage
 
 test: environment
-	$(PYTHON) setup.py nosetests $(COVERAGE_ARGS)
+	$(PYTHON) setup.py test
 
-coverage: COVERAGE_ARGS=--with-coverage
-coverage: test
+coverage:
 	@- $(RM) -r $(REPORTDIR)/coverage
+	$(PYTHON) setup.py test --environment $(TARGET_TOX) --with-coverage
 	$(COVERAGE) html '--omit=$(ENVDIR)/*' --directory=$(REPORTDIR)/coverage
 
 #
@@ -34,7 +40,8 @@ coverage: test
 environment: $(STATEDIR) $(STATEDIR)/virtualenv $(STATEDIR)/requirements-installed
 
 $(STATEDIR)/virtualenv:
-	virtualenv --prompt='{family-tree}' $(ENVDIR)
+	virtualenv --python=$(TARGET_PYTHON) --prompt='{family-tree}' --no-setuptools --no-pip $(ENVDIR)
+	$(DOWNLOAD) "$(PIP_LOCATION)" | $(ENVDIR)/bin/python
 	touch "$@"
 
 $(STATEDIR)/requirements-installed: $(STATEDIR)/requirements.txt
@@ -55,6 +62,7 @@ $(STATEDIR) $(DISTDIR):
 clean:
 	- $(RM) .coverage
 	- $(FIND) . -name '*.pyc' -delete
+	- $(FIND) . -name '__pycache__' -delete
 
 dist-clean: clean
 	- $(RMDIR) $(BUILDDIR) $(REPORTDIR) $(DISTDIR) *.egg-info

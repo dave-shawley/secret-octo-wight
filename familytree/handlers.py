@@ -7,9 +7,7 @@ from . import http
 
 
 class BaseHandler(RequestHandler):
-    supported_media_types = {
-        'application/json',
-    }
+    supported_media_types = set(['application/json'])
 
     def __init__(self, *args, **kwargs):
         super(BaseHandler, self).__init__(*args, **kwargs)
@@ -103,12 +101,15 @@ class BaseHandler(RequestHandler):
                 'Content-Type',
                 'application/octet-stream'
             )
-            (content_type, _) = werkzeug.http.parse_options_header(
+            parsed = werkzeug.http.parse_options_header(
                 full_content_type)
+            (content_type, content_options) = parsed
             if content_type not in self.supported_media_types:
                 raise HTTPError(http.UNSUPPORTED_MEDIA_TYPE)
             if content_type.startswith('application/json'):
-                self._request_body = json.loads(self.request.body)
+                charset = content_options.get('charset', 'utf-8')
+                self._request_body = json.loads(
+                    self.request.body.decode(charset))
             else:
                 raise HTTPError(
                     http.INTERNAL_SERVER_ERROR,

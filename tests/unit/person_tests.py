@@ -1,6 +1,3 @@
-import unittest
-
-from mock import Mock, sentinel
 from tornado import web
 import fluenttest
 
@@ -11,6 +8,8 @@ from familytree.person import (
     PersonHandler,
 )
 from . import TornadoHandlerTestCase
+from ..helpers.compat import mock
+from ..helpers.compat import unittest
 
 
 ###############################################################################
@@ -25,9 +24,9 @@ class WhenPostingToCreatePersonHandler(TornadoHandlerTestCase):
         cls.storage = cls.patch('familytree.person.storage')
         cls.uuid_module = cls.patch('familytree.person.uuid')
         cls.handler = CreatePersonHandler(cls.application, cls.request)
-        cls.handler.deserialize_model_instance = Mock()
-        cls.handler.serialize_model_instance = Mock()
-        cls.handler.set_status = Mock()
+        cls.handler.deserialize_model_instance = mock.Mock()
+        cls.handler.serialize_model_instance = mock.Mock()
+        cls.handler.set_status = mock.Mock()
 
         cls.person = cls.handler.deserialize_model_instance.return_value
 
@@ -80,10 +79,10 @@ class _PersonHandlerGetTestCase(TornadoHandlerTestCase, unittest.TestCase):
 
     @classmethod
     def act(cls):
-        cls.response = cls.handler.get(sentinel.person_id)
+        cls.response = cls.handler.get(mock.sentinel.person_id)
 
     def should_retrieve_person_from_data_store(self):
-        self.get_item.assert_called_once_with(Person, sentinel.person_id)
+        self.get_item.assert_called_once_with(Person, mock.sentinel.person_id)
 
 
 class WhenPersonHandlerGets(_PersonHandlerGetTestCase):
@@ -92,8 +91,8 @@ class WhenPersonHandlerGets(_PersonHandlerGetTestCase):
     def arrange(cls):
         super(WhenPersonHandlerGets, cls).arrange()
         cls.person = cls.get_item.return_value
-        cls.handler.serialize_model_instance = Mock()
-        cls.handler.set_status = Mock()
+        cls.handler.serialize_model_instance = mock.Mock()
+        cls.handler.set_status = mock.Mock()
 
     def should_serialize_model_instance(self):
         self.handler.serialize_model_instance.assert_called_once_with(
@@ -120,7 +119,7 @@ class WhenPersonHandlerGetsNonexistentPerson(_PersonHandlerGetTestCase):
     @classmethod
     def arrange(cls):
         super(WhenPersonHandlerGetsNonexistentPerson, cls).arrange()
-        cls.get_item.side_effect = storage.InstanceNotFound(Mock(), '')
+        cls.get_item.side_effect = storage.InstanceNotFound(mock.Mock(), '')
 
     def should_raise_not_found(self):
         self.assertEqual(self.exception.status_code, 404)
@@ -140,10 +139,11 @@ class _PersonHandlerDeleteTestCase(TornadoHandlerTestCase, unittest.TestCase):
 
     @classmethod
     def act(cls):
-        cls.handler.delete(sentinel.person_id)
+        cls.handler.delete(mock.sentinel.person_id)
 
     def should_call_delete_item(self):
-        self.delete_item.assert_called_once_with(Person, sentinel.person_id)
+        self.delete_item.assert_called_once_with(
+            Person, mock.sentinel.person_id)
 
 
 class WhenPersonHandlerDeletes(_PersonHandlerDeleteTestCase):
@@ -151,7 +151,7 @@ class WhenPersonHandlerDeletes(_PersonHandlerDeleteTestCase):
     @classmethod
     def arrange(cls):
         super(WhenPersonHandlerDeletes, cls).arrange()
-        cls.handler.set_status = Mock()
+        cls.handler.set_status = mock.Mock()
 
     def should_set_status_to_no_content(self):
         self.handler.set_status.assert_called_once_with(204)
@@ -164,7 +164,7 @@ class WhenPersonHandlerDeletesNonexistentPerson(_PersonHandlerDeleteTestCase):
     @classmethod
     def arrange(cls):
         super(WhenPersonHandlerDeletesNonexistentPerson, cls).arrange()
-        cls.delete_item.side_effect = storage.InstanceNotFound(Mock(), '')
+        cls.delete_item.side_effect = storage.InstanceNotFound(mock.Mock(), '')
 
     def should_raise_not_found(self):
         self.assertEqual(self.exception.status_code, 404)
@@ -180,8 +180,8 @@ class WhenInitializingPerson(fluenttest.TestCase, unittest.TestCase):
     def arrange(cls):
         super(WhenInitializingPerson, cls).arrange()
         cls.kwargs = {
-            'display_name': sentinel.display_name,
-            'person_id': sentinel.person_id,
+            'display_name': mock.sentinel.display_name,
+            'person_id': mock.sentinel.person_id,
         }
 
     @classmethod
@@ -214,7 +214,7 @@ class WhenInitializingPersonWithDisplayName(WhenInitializingPerson):
         del cls.kwargs['person_id']
 
     def should_save_display_name(self):
-        self.assertEqual(self.person.display_name, sentinel.display_name)
+        self.assertEqual(self.person.display_name, mock.sentinel.display_name)
 
     def should_not_have_id(self):
         self.assertIsNone(self.person.id)
@@ -228,7 +228,7 @@ class WhenInitializingPersonWithId(WhenInitializingPerson):
         del cls.kwargs['display_name']
 
     def should_save_id(self):
-        self.assertEqual(self.person.id, sentinel.person_id)
+        self.assertEqual(self.person.id, mock.sentinel.person_id)
 
 
 ###############################################################################
@@ -241,8 +241,8 @@ class WhenConvertingToDictionary(fluenttest.TestCase, unittest.TestCase):
     def arrange(cls):
         super(WhenConvertingToDictionary, cls).arrange()
         cls.person = Person(
-            display_name=sentinel.display_name,
-            person_id=sentinel.person_id,
+            display_name=mock.sentinel.display_name,
+            person_id=mock.sentinel.person_id,
         )
 
     @classmethod
@@ -250,10 +250,11 @@ class WhenConvertingToDictionary(fluenttest.TestCase, unittest.TestCase):
         cls.dict_repr = cls.person.as_dictionary()
 
     def should_populate_id(self):
-        self.assertEqual(self.dict_repr['id'], sentinel.person_id)
+        self.assertEqual(self.dict_repr['id'], mock.sentinel.person_id)
 
     def should_populate_display_name(self):
-        self.assertEqual(self.dict_repr['display_name'], sentinel.display_name)
+        self.assertEqual(
+            self.dict_repr['display_name'], mock.sentinel.display_name)
 
     def should_populate_events_list(self):
         self.assertEqual(self.dict_repr['events'], self.person.events)
@@ -269,9 +270,9 @@ class FromDictionaryTestCase(fluenttest.TestCase, unittest.TestCase):
     def arrange(cls):
         super(FromDictionaryTestCase, cls).arrange()
         cls.dict_repr = {
-            'display_name': sentinel.display_name,
-            'id': sentinel.person_id,
-            'events': [sentinel.event],
+            'display_name': mock.sentinel.display_name,
+            'id': mock.sentinel.person_id,
+            'events': [mock.sentinel.event],
         }
 
     @classmethod
@@ -289,7 +290,7 @@ class WhenConvertingFromDictionary(FromDictionaryTestCase):
             self.person.display_name, self.dict_repr['display_name'])
 
     def should_populate_events(self):
-        self.assertEqual(self.person.events, [sentinel.event])
+        self.assertEqual(self.person.events, [mock.sentinel.event])
 
 
 class WhenConvertingFromDictionaryWithoutDisplayName(FromDictionaryTestCase):
@@ -325,15 +326,15 @@ class WhenAddingEvent(fluenttest.TestCase):
     @classmethod
     def arrange(cls):
         super(WhenAddingEvent, cls).arrange()
-        cls.person = Person(sentinel.display_name)
-        cls.person.events = Mock()
+        cls.person = Person(mock.sentinel.display_name)
+        cls.person.events = mock.Mock()
 
     @classmethod
     def act(cls):
-        cls.person.add_event(sentinel.event_url)
+        cls.person.add_event(mock.sentinel.event_url)
 
     def should_append_new_event(self):
-        self.person.events.append(sentinel.event_url)
+        self.person.events.append(mock.sentinel.event_url)
 
 
 ###############################################################################
@@ -345,12 +346,13 @@ class WhenRemovingEvent(fluenttest.TestCase):
     @classmethod
     def arrange(cls):
         super(WhenRemovingEvent, cls).arrange()
-        cls.person = Person(sentinel.display_name)
-        cls.person.events = Mock()
+        cls.person = Person(mock.sentinel.display_name)
+        cls.person.events = mock.Mock()
 
     @classmethod
     def act(cls):
-        cls.person.remove_event(sentinel.event_url)
+        cls.person.remove_event(mock.sentinel.event_url)
 
     def should_remove_event_url(self):
-        self.person.events.remove.assert_called_once_with(sentinel.event_url)
+        self.person.events.remove.assert_called_once_with(
+            mock.sentinel.event_url)

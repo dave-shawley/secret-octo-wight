@@ -1,8 +1,7 @@
-import unittest
-
 import fluenttest
-import mock
 
+from ..helpers.compat import mock
+from ..helpers.compat import unittest
 import familytree.main
 
 

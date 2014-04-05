@@ -3,7 +3,6 @@ from __future__ import print_function, absolute_import
 import json
 import socket
 import sys
-import unittest
 
 from tornado.ioloop import IOLoop
 from tornado.httpclient import AsyncHTTPClient, HTTPRequest
@@ -12,6 +11,7 @@ from werkzeug.http import parse_options_header
 import fluenttest
 
 from familytree import http
+from .compat import unittest
 
 
 if sys.version_info[0] < 3:
@@ -137,7 +137,7 @@ class JSONMixin(object):
             content_type = parse_options_header(
                 cls.header('Content-Type', 'application/octet-stream'))
             assert content_type[0].startswith('application/json')
-            return json.loads(cls.last_response.body)
+            return json.loads(cls.last_response.body.decode('utf-8'))
         return None
 
     @classmethod

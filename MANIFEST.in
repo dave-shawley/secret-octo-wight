@@ -1,6 +1,7 @@
 include .coveragerc
 include Makefile
 include setupext.py
+include tox.ini
 
 graft doc
 graft etc

@@ -1,19 +1,24 @@
 #!/usr/bin/env python
 import os.path
+import sys
 
 from setuptools import find_packages, setup
 
-from setupext import read_requirements_from_file
 import familytree
+import setupext
 
 
-root_path = os.path.dirname(__file__)
+def read_requirements(which):
+    path = os.path.join(os.path.dirname(__file__), 'requirements', which)
+    return setupext.read_requirements_from_file(path)
 
 
-def read_requirements(file_name):
-    return read_requirements_from_file(
-        os.path.join(root_path, 'requirements', file_name))
+install_requires = read_requirements('install.txt')
+setup_requires = read_requirements('setup.txt')
+tests_require = read_requirements('test.txt')
 
+if sys.version_info[:2] < (2, 7):
+    tests_require.append('unittest2')
 
 setup(
     name='family-tree',
@@ -33,9 +38,9 @@ setup(
     ],
     zip_safe=False,
     platforms='any',
-    install_requires=read_requirements('install.txt'),
-    setup_requires=read_requirements('setup.txt'),
-    tests_require=read_requirements('test.txt'),
+    install_requires=install_requires,
+    setup_requires=setup_requires,
+    tests_require=tests_require,
     classifiers=[
         'Intended Audience :: Developers',
         'License :: OSI Approved :: BSD License',
@@ -45,4 +50,7 @@ setup(
     entry_points={
         'console_scripts': ['family-tree-web = familytree.main:main'],
     },
+    cmdclass={
+        'test': setupext.Tox,
+    }
 )

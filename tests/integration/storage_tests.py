@@ -1,9 +1,8 @@
-import unittest
-
 import fluenttest
-import mock
 
 from familytree import storage
+from ..helpers.compat import mock
+from ..helpers.compat import unittest
 
 
 class StorageTestCase(fluenttest.TestCase, unittest.TestCase):
