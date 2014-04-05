@@ -4,13 +4,13 @@ import sys
 
 from setuptools import find_packages, setup
 
-from setupext import read_requirements_from_file
 import familytree
+import setupext
 
 
 def read_requirements(which):
     path = os.path.join(os.path.dirname(__file__), 'requirements', which)
-    return read_requirements_from_file(path)
+    return setupext.read_requirements_from_file(path)
 
 
 install_requires = read_requirements('install.txt')
@@ -50,4 +50,7 @@ setup(
     entry_points={
         'console_scripts': ['family-tree-web = familytree.main:main'],
     },
+    cmdclass={
+        'test': setupext.Tox,
+    }
 )

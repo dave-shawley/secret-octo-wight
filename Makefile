@@ -25,11 +25,11 @@ export NOSE_COVER_TEXT=no
 .PHONY: test coverage
 
 test: environment
-	$(TOX)
+	$(PYTHON) setup.py test
 
 coverage:
 	@- $(RM) -r $(REPORTDIR)/coverage
-	$(TOX) -e $(TARGET_TOX) -- --with-coverage --cover-package=familytree,tests
+	$(PYTHON) setup.py test --environment $(TARGET_TOX) --with-coverage
 	$(COVERAGE) html '--omit=$(ENVDIR)/*' --directory=$(REPORTDIR)/coverage
 
 #
