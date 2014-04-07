@@ -76,7 +76,7 @@ class WhenFetchingDeletedEvent(AcceptanceTestCase):
 
     @classmethod
     def act(cls):
-        cls.get(cls.event_link)
+        cls.http_get(cls.event_link)
 
     def should_return_not_found(self):
         self.assertEqual(self.last_response.code, 404)

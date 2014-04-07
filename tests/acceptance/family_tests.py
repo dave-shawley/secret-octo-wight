@@ -100,7 +100,7 @@ class WhenDeletingFamilyEvent(AcceptanceTestCase):
         self.assertEqual(self.response.code, 204)
 
     def should_delete_event(self):
-        response = self.get(self.event_url)
+        response = self.http_get(self.event_url)
         self.assertEqual(response.code, 404)
 
     def should_remove_event_from_people(self):

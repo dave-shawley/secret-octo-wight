@@ -109,7 +109,7 @@ class TornadoTestCase(fluenttest.TestCase, unittest.TestCase):
         return cls.last_response
 
     @classmethod
-    def get(cls, request):
+    def http_get(cls, request):
         return cls._fetch('GET', request)
 
     @classmethod
@@ -150,7 +150,7 @@ class JSONMixin(object):
 
     @classmethod
     def get_json(cls, path):
-        cls.get(path)
+        cls.http_get(path)
         return cls.decode_json_response()
 
     @classmethod

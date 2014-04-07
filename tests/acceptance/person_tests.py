@@ -131,5 +131,5 @@ class WhenDeletingPerson(PersonApiTestCase):
         self.assertEqual(self.response.code, 204)
 
     def should_return_not_found_after_delete(self):
-        response = self.get(self.person['self'])
+        response = self.http_get(self.person['self'])
         self.assertEqual(response.code, 404)
