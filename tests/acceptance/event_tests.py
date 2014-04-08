@@ -58,7 +58,7 @@ class WhenDeletingEvent(AcceptanceTestCase):
 
     @classmethod
     def act(cls):
-        cls.delete(cls.event['actions']['delete-event']['url'])
+        cls.http_delete(cls.event['actions']['delete-event']['url'])
 
     def should_return_no_content(self):
         self.assertEqual(self.last_response.code, 204)
@@ -72,7 +72,7 @@ class WhenFetchingDeletedEvent(AcceptanceTestCase):
         cls.make_event(type='some event type')
         cls.event_link = cls.header('Location')
         event = cls.get_json(cls.event_link)
-        cls.delete(event['actions']['delete-event']['url'])
+        cls.http_delete(event['actions']['delete-event']['url'])
 
     @classmethod
     def act(cls):

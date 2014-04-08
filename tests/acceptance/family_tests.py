@@ -94,7 +94,7 @@ class WhenDeletingFamilyEvent(AcceptanceTestCase):
 
     @classmethod
     def act(cls):
-        cls.response = cls.delete(cls.event_url)
+        cls.response = cls.http_delete(cls.event_url)
 
     def should_return_no_content(self):
         self.assertEqual(self.response.code, 204)

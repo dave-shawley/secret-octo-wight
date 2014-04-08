@@ -124,7 +124,7 @@ class WhenDeletingPerson(PersonApiTestCase):
 
     @classmethod
     def act(cls):
-        cls.response = cls.delete(
+        cls.response = cls.http_delete(
             cls.person['actions']['delete-person']['url'])
 
     def should_return_no_content(self):

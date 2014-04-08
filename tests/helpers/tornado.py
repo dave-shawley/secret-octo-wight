@@ -117,7 +117,7 @@ class TornadoTestCase(fluenttest.TestCase, unittest.TestCase):
         return cls._fetch('POST', request)
 
     @classmethod
-    def delete(cls, request):
+    def http_delete(cls, request):
         return cls._fetch('DELETE', request)
 
     @classmethod
