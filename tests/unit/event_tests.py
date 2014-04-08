@@ -43,7 +43,12 @@ class CreateEventHandlerTestCase(TornadoHandlerTestCase):
     def should_serialize_model_instance(self):
         self.handler.serialize_model_instance.assert_called_once_with(
             self.handler.deserialize_model_instance.return_value,
-            mock.ANY,
+            {
+                'name': 'delete-event',
+                'method': 'DELETE',
+                'handler': event.EventHandler,
+                'args': (self.uuid_module.uuid4.return_value.hex,)
+            },
             model_handler=event.EventHandler,
         )
 
@@ -118,7 +123,12 @@ class WhenEventHandlerGets(TornadoHandlerTestCase):
     def should_serialize_model_instance(self):
         self.handler.serialize_model_instance.assert_called_once_with(
             self.event,
-            mock.ANY,
+            {
+                'name': 'delete-event',
+                'method': 'DELETE',
+                'handler': event.EventHandler,
+                'args': (self.event.id,)
+            },
             model_handler=event.EventHandler,
         )
 
