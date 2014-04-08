@@ -21,7 +21,7 @@ class WhenCreatingPersonWithoutBody(tornado.TornadoTestCase):
 
     @classmethod
     def act(cls):
-        cls.response = cls.post(cls.build_request('person', body=''))
+        cls.response = cls.http_post(cls.build_request('person', body=''))
 
     def should_fail_with_bad_request(self):
         self.assertEqual(self.response.code, 400)
@@ -50,7 +50,7 @@ class WhenCreatingPersonWithUnrecognizedContentType(tornado.TornadoTestCase):
 
     @classmethod
     def act(cls):
-        cls.response = cls.post(cls.build_request(
+        cls.response = cls.http_post(cls.build_request(
             'person',
             headers={'Content-Type': 'application/vnd.does.not.exist'},
             body='Random Gibberish',

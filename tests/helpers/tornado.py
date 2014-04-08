@@ -113,7 +113,7 @@ class TornadoTestCase(fluenttest.TestCase, unittest.TestCase):
         return cls._fetch('GET', request)
 
     @classmethod
-    def post(cls, request):
+    def http_post(cls, request):
         return cls._fetch('POST', request)
 
     @classmethod
@@ -160,5 +160,5 @@ class JSONMixin(object):
             body=json_dict,
             headers={'Content-Type': 'application/json'},
         )
-        cls.post(request)
+        cls.http_post(request)
         return cls.decode_json_response()
