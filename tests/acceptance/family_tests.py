@@ -58,10 +58,7 @@ class WhenFetchingCreatedEvent(AcceptanceTestCase):
         self.assertIn(self.second_person['self'], self.event['people'])
 
     def should_include_delete_event_action(self):
-        self.assertDictContainsSubset(
-            {'method': 'DELETE'},
-            self.event['actions']['delete-event'],
-        )
+        self.assertIn('delete-event', self.event['actions'])
 
 
 class WhenEventIsCreatedRelatedPeopleAreModified(AcceptanceTestCase):

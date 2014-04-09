@@ -43,8 +43,7 @@ class WhenFetchingCreatedEvent(AcceptanceTestCase):
         self.assertEqual(self.event['self'], self.event_link)
 
     def should_include_delete_action(self):
-        self.assertDictContainsSubset(
-            {'method': 'DELETE'}, self.event['actions']['delete-event'])
+        self.assertIn('delete-event', self.event['actions'])
 
 
 class WhenDeletingEvent(AcceptanceTestCase):

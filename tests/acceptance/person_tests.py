@@ -109,10 +109,7 @@ class WhenFetchingCreatedPerson(PersonApiTestCase):
             self.last_response.headers['Location'], self.person_url)
 
     def should_include_delete_person_action(self):
-        self.assertDictContainsSubset(
-            {'method': 'DELETE'},
-            self.response['actions']['delete-person'],
-        )
+        self.assertIn('delete-person', self.response['actions'])
 
 
 class WhenDeletingPerson(PersonApiTestCase):
