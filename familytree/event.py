@@ -8,6 +8,13 @@ from . import person
 from . import storage
 
 
+def get_handlers(url_stem):
+    return [
+        (url_stem, CreateEventHandler),
+        (url_stem + '/([a-f0-9]+)', EventHandler),
+    ]
+
+
 class Event(object):
 
     """A Event is an interesting occurrence that involves people.

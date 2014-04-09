@@ -7,6 +7,13 @@ from . import http
 from . import storage
 
 
+def get_handlers(url_stem):
+    return [
+        (url_stem, CreatePersonHandler),
+        (url_stem + '/([a-f0-9]+)', PersonHandler),
+    ]
+
+
 class Person(object):
 
     """Information about a single person.
