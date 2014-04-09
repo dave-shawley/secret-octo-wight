@@ -50,14 +50,16 @@ class WhenPostingToCreatePersonHandler(TornadoHandlerTestCase):
     def should_serialize_model_instance(self):
         self.handler.serialize_model_instance.assert_called_once_with(
             self.person,
-            {
-                'name': 'delete-person',
-                'method': 'DELETE',
-                'handler': PersonHandler,
-                'args': (
-                    self.person.id,
-                )
-            },
+            actions=[
+                {
+                    'name': 'delete-person',
+                    'method': 'DELETE',
+                    'handler': PersonHandler,
+                    'args': (
+                        self.person.id,
+                    )
+                }
+            ],
             model_handler=PersonHandler,
         )
 
@@ -97,14 +99,16 @@ class WhenPersonHandlerGets(_PersonHandlerGetTestCase):
     def should_serialize_model_instance(self):
         self.handler.serialize_model_instance.assert_called_once_with(
             self.person,
-            {
-                'name': 'delete-person',
-                'method': 'DELETE',
-                'handler': PersonHandler,
-                'args': (
-                    self.person.id,
-                )
-            },
+            actions=[
+                {
+                    'name': 'delete-person',
+                    'method': 'DELETE',
+                    'handler': PersonHandler,
+                    'args': (
+                        self.person.id,
+                    )
+                }
+            ],
             model_handler=PersonHandler,
         )
 

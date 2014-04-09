@@ -187,7 +187,7 @@ class WhenSerializingModelInstanceWithActions(_SerializeModelInstanceTestCase):
     @classmethod
     def act(cls):
         cls.returned = cls.handler.serialize_model_instance(
-            cls.model_instance, mock.MagicMock(), mock.MagicMock(), cls.action)
+            cls.model_instance, actions=[cls.action])
 
     def should_create_action_card(self):
         self.model_representation.setdefault.assert_any_call('actions', {})

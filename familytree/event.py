@@ -15,6 +15,13 @@ def get_handlers(url_stem):
     ]
 
 
+def get_applicable_actions(event):
+    return [
+        {'name': 'delete-event', 'method': 'DELETE',
+         'handler': EventHandler, 'args': (event.id,)},
+    ]
+
+
 class Event(object):
 
     """A Event is an interesting occurrence that involves people.
@@ -77,12 +84,7 @@ class CreateEventHandler(handlers.BaseHandler):
             storage.save_item(a_person, a_person.id)
         self.serialize_model_instance(
             event,
-            {
-                'name': 'delete-event',
-                'method': 'DELETE',
-                'handler': EventHandler,
-                'args': (event.id,)
-            },
+            actions=get_applicable_actions(event),
             model_handler=EventHandler,
         )
         self.set_status(http.CREATED)
@@ -110,12 +112,7 @@ class EventHandler(handlers.BaseHandler):
 
         self.serialize_model_instance(
             event,
-            {
-                'name': 'delete-event',
-                'method': 'DELETE',
-                'handler': EventHandler,
-                'args': (event.id,)
-            },
+            actions=get_applicable_actions(event),
             model_handler=EventHandler,
         )
         self.set_status(http.OK)

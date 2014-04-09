@@ -38,16 +38,16 @@ class BaseHandler(RequestHandler):
         """
         return model_class.from_dictionary(self.request_body)
 
-    def serialize_model_instance(self, model_instance, *actions, **kwds):
+    def serialize_model_instance(self, model_instance, **kwds):
         """Send a *model* instance as the response.
 
         :param model_instance: instance of a *model* class that
             implements an ``as_dictionary`` method.
+        :keyword actions: a list of actions represented as dictionary
+            instances.
         :keyword RequestHandler model_handler: the Tornado handler that
             *owns* the model instance.  If present, this parameter is
             used to create the *self* link.
-        :param actions: a list of actions represented as dictionary
-            instances.
 
         The actions available for this model instance are passed as
         dictionary instances in the unnamed arguments list.  Each
@@ -69,7 +69,7 @@ class BaseHandler(RequestHandler):
             model_representation['self'] = url
             self.set_header('Location', url)
 
-        for action in actions:
+        for action in kwds.get('actions', []):
             action_card = model_representation.setdefault('actions', {})
             action_card[action['name']] = {
                 'method': action['method'],
