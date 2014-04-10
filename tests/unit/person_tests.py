@@ -6,10 +6,35 @@ from familytree.person import (
     CreatePersonHandler,
     Person,
     PersonHandler,
+    get_applicable_actions,
 )
-from . import TornadoHandlerTestCase
+from . import ActionCardTestMixin, TornadoHandlerTestCase
 from ..helpers.compat import mock
 from ..helpers.compat import unittest
+
+
+###############################################################################
+### get_applicable_actions
+###############################################################################
+
+class WhenGettingApplicableActions(ActionCardTestMixin, fluenttest.TestCase):
+
+    @classmethod
+    def arrange(cls):
+        super(WhenGettingApplicableActions, cls).arrange()
+        cls.person = mock.Mock()
+
+    @classmethod
+    def act(cls):
+        cls.action_card = get_applicable_actions(cls.person)
+
+    def should_return_delete_person_action(self):
+        self.assert_action_returned(
+            name='delete-person',
+            method='DELETE',
+            handler=PersonHandler,
+            args=(self.person.id, ),
+        )
 
 
 ###############################################################################
@@ -23,6 +48,7 @@ class WhenPostingToCreatePersonHandler(TornadoHandlerTestCase):
         super(WhenPostingToCreatePersonHandler, cls).arrange()
         cls.storage = cls.patch('familytree.person.storage')
         cls.uuid_module = cls.patch('familytree.person.uuid')
+        cls.get_actions = cls.patch('familytree.person.get_applicable_actions')
         cls.handler = CreatePersonHandler(cls.application, cls.request)
         cls.handler.deserialize_model_instance = mock.Mock()
         cls.handler.serialize_model_instance = mock.Mock()
@@ -50,16 +76,7 @@ class WhenPostingToCreatePersonHandler(TornadoHandlerTestCase):
     def should_serialize_model_instance(self):
         self.handler.serialize_model_instance.assert_called_once_with(
             self.person,
-            actions=[
-                {
-                    'name': 'delete-person',
-                    'method': 'DELETE',
-                    'handler': PersonHandler,
-                    'args': (
-                        self.person.id,
-                    )
-                }
-            ],
+            actions=self.get_actions.return_value,
             model_handler=PersonHandler,
         )
 
@@ -92,6 +109,7 @@ class WhenPersonHandlerGets(_PersonHandlerGetTestCase):
     @classmethod
     def arrange(cls):
         super(WhenPersonHandlerGets, cls).arrange()
+        cls.get_actions = cls.patch('familytree.person.get_applicable_actions')
         cls.person = cls.get_item.return_value
         cls.handler.serialize_model_instance = mock.Mock()
         cls.handler.set_status = mock.Mock()
@@ -99,16 +117,7 @@ class WhenPersonHandlerGets(_PersonHandlerGetTestCase):
     def should_serialize_model_instance(self):
         self.handler.serialize_model_instance.assert_called_once_with(
             self.person,
-            actions=[
-                {
-                    'name': 'delete-person',
-                    'method': 'DELETE',
-                    'handler': PersonHandler,
-                    'args': (
-                        self.person.id,
-                    )
-                }
-            ],
+            actions=self.get_actions.return_value,
             model_handler=PersonHandler,
         )
 
