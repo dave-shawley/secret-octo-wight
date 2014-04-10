@@ -14,7 +14,7 @@ class ControllerTestCase(fluenttest.TestCase):
 
 
 ###############################################################################
-### Controller Class
+# Controller Class
 ###############################################################################
 
 class TheControllerClass(unittest.TestCase):
@@ -29,7 +29,7 @@ class TheControllerClass(unittest.TestCase):
 
 
 ###############################################################################
-### Controller.__init__
+# Controller.__init__
 ###############################################################################
 
 class WhenCreatingController(ControllerTestCase, unittest.TestCase):
@@ -48,7 +48,7 @@ class WhenCreatingController(ControllerTestCase, unittest.TestCase):
 
 
 ###############################################################################
-### Controller.run
+# Controller.run
 ###############################################################################
 
 class WhenControllerRuns(ControllerTestCase, unittest.TestCase):
@@ -99,7 +99,7 @@ class WhenControllerRuns(ControllerTestCase, unittest.TestCase):
 
 
 ###############################################################################
-### Controller.cleanup
+# Controller.cleanup
 ###############################################################################
 
 class WhenCleaningUpController(ControllerTestCase):

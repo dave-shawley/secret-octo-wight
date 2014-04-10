@@ -9,7 +9,7 @@ from ..helpers.compat import unittest
 
 
 ###############################################################################
-### get_applicable_actions
+# get_applicable_actions
 ###############################################################################
 
 class WhenGettingApplicableActions(ActionCardTestMixin, fluenttest.TestCase):
@@ -30,7 +30,7 @@ class WhenGettingApplicableActions(ActionCardTestMixin, fluenttest.TestCase):
 
 
 ###############################################################################
-### CreateEventHandler.post
+# CreateEventHandler.post
 ###############################################################################
 
 class CreateEventHandlerTestCase(TornadoHandlerTestCase):
@@ -116,7 +116,7 @@ class WhenPostingToCreateEventHandlerWithPeople(CreateEventHandlerTestCase):
 
 
 ###############################################################################
-### EventHandler.get
+# EventHandler.get
 ###############################################################################
 
 class WhenEventHandlerGets(TornadoHandlerTestCase):
@@ -151,7 +151,7 @@ class WhenEventHandlerGets(TornadoHandlerTestCase):
 
 
 ###############################################################################
-### EventHandler.delete
+# EventHandler.delete
 ###############################################################################
 
 class EventHandlerDeleteTestCase(TornadoHandlerTestCase, unittest.TestCase):

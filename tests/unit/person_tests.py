@@ -14,7 +14,7 @@ from ..helpers.compat import unittest
 
 
 ###############################################################################
-### get_applicable_actions
+# get_applicable_actions
 ###############################################################################
 
 class WhenGettingApplicableActions(ActionCardTestMixin, fluenttest.TestCase):
@@ -38,7 +38,7 @@ class WhenGettingApplicableActions(ActionCardTestMixin, fluenttest.TestCase):
 
 
 ###############################################################################
-### CreatePersonHandler.post
+# CreatePersonHandler.post
 ###############################################################################
 
 class WhenPostingToCreatePersonHandler(TornadoHandlerTestCase):
@@ -85,7 +85,7 @@ class WhenPostingToCreatePersonHandler(TornadoHandlerTestCase):
 
 
 ###############################################################################
-### PersonHandler.get()
+# PersonHandler.get()
 ###############################################################################
 
 class _PersonHandlerGetTestCase(TornadoHandlerTestCase, unittest.TestCase):
@@ -139,7 +139,7 @@ class WhenPersonHandlerGetsNonexistentPerson(_PersonHandlerGetTestCase):
 
 
 ###############################################################################
-### PersonHandler.delete
+# PersonHandler.delete
 ###############################################################################
 
 class _PersonHandlerDeleteTestCase(TornadoHandlerTestCase, unittest.TestCase):
@@ -184,7 +184,7 @@ class WhenPersonHandlerDeletesNonexistentPerson(_PersonHandlerDeleteTestCase):
 
 
 ###############################################################################
-### Person.__init__
+# Person.__init__
 ###############################################################################
 
 class WhenInitializingPerson(fluenttest.TestCase, unittest.TestCase):
@@ -245,7 +245,7 @@ class WhenInitializingPersonWithId(WhenInitializingPerson):
 
 
 ###############################################################################
-### Person.as_dictionary
+# Person.as_dictionary
 ###############################################################################
 
 class WhenConvertingToDictionary(fluenttest.TestCase, unittest.TestCase):
@@ -274,7 +274,7 @@ class WhenConvertingToDictionary(fluenttest.TestCase, unittest.TestCase):
 
 
 ###############################################################################
-### Person.from_dictionary
+# Person.from_dictionary
 ###############################################################################
 
 class FromDictionaryTestCase(fluenttest.TestCase, unittest.TestCase):
@@ -331,7 +331,7 @@ class WhenConvertingFromDictionaryWithoutId(FromDictionaryTestCase):
 
 
 ###############################################################################
-### Person.add_event
+# Person.add_event
 ###############################################################################
 
 class WhenAddingEvent(fluenttest.TestCase):
@@ -351,7 +351,7 @@ class WhenAddingEvent(fluenttest.TestCase):
 
 
 ###############################################################################
-### Person.remove_event
+# Person.remove_event
 ###############################################################################
 
 class WhenRemovingEvent(fluenttest.TestCase):
