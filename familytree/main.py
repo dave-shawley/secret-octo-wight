@@ -17,12 +17,9 @@ LOGGER = logging.getLogger(__name__)
 class Application(tornado.web.Application):
 
     def __init__(self):
-        handlers = [
-            ('/event', event.CreateEventHandler),
-            ('/event/([a-f0-9]+)', event.EventHandler),
-            ('/person', person.CreatePersonHandler),
-            ('/person/([a-f0-9]+)', person.PersonHandler),
-        ]
+        handlers = []
+        handlers.extend(event.get_handlers('/event'))
+        handlers.extend(person.get_handlers('/person'))
         super(Application, self).__init__(handlers)
 
     def get_url_for(self, request, handler, *args):

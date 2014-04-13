@@ -29,7 +29,7 @@ class MissingItemMixin(object):
 
 
 ###############################################################################
-### ModelInstance.as_dictionary
+# ModelInstance.as_dictionary
 ###############################################################################
 
 class WhenConvertingModelInstanceToDictionary(
@@ -51,9 +51,8 @@ class WhenConvertingModelInstanceToDictionary(
 
 
 ###############################################################################
-### ModelInstance.from_dictionary
+# ModelInstance.from_dictionary
 ###############################################################################
-
 
 class WhenCreatingInstanceFromDictionary(
         fluenttest.TestCase, unittest.TestCase):
@@ -69,7 +68,7 @@ class WhenCreatingInstanceFromDictionary(
 
 
 ###############################################################################
-### get_item
+# get_item
 ###############################################################################
 
 class WhenGettingItem(StorageTestCase):
@@ -104,7 +103,7 @@ class WhenGettingItemThatDoesNotExist(MissingItemMixin, StorageTestCase):
 
 
 ###############################################################################
-### save_item
+# save_item
 ###############################################################################
 
 class WhenSavingItem(StorageTestCase):
@@ -124,7 +123,7 @@ class WhenSavingItem(StorageTestCase):
 
 
 ###############################################################################
-### delete_item
+# delete_item
 ###############################################################################
 
 class WhenDeletingItem(StorageTestCase):

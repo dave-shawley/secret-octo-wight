@@ -14,7 +14,7 @@ from familytree import http
 from .compat import unittest
 
 
-if sys.version_info[0] < 3:
+if sys.version_info[0] < 3:  # pragma: no cover
     def is_string(obj):
         return isinstance(obj, basestring)
 else:
@@ -22,7 +22,7 @@ else:
         return isinstance(obj, str)
 
 
-def log(msg_format, *args, **kwargs):  # pragma nocover
+def log(msg_format, *args, **kwargs):  # pragma no cover
     print(msg_format.format(*args, **kwargs), file=sys.stderr)
 
 
@@ -31,7 +31,7 @@ class TornadoTestCase(fluenttest.TestCase, unittest.TestCase):
     last_response = None
 
     @classmethod
-    def make_application(cls):  # pragma nocover
+    def make_application(cls):  # pragma no cover
         """Implement this to return the application under test."""
 
     @classmethod
@@ -70,7 +70,7 @@ class TornadoTestCase(fluenttest.TestCase, unittest.TestCase):
     def _stop(cls, arg=None, **kwargs):
         result = kwargs or arg
         cls.io_loop.stop()
-        if cls.show_trace:  # pragma nocover
+        if cls.show_trace:  # pragma no cover
             if result:
                 if hasattr(result, 'request'):
                     log('REQUEST: {0.method} {0.url}', result.request)
@@ -109,15 +109,15 @@ class TornadoTestCase(fluenttest.TestCase, unittest.TestCase):
         return cls.last_response
 
     @classmethod
-    def get(cls, request):
+    def http_get(cls, request):
         return cls._fetch('GET', request)
 
     @classmethod
-    def post(cls, request):
+    def http_post(cls, request):
         return cls._fetch('POST', request)
 
     @classmethod
-    def delete(cls, request):
+    def http_delete(cls, request):
         return cls._fetch('DELETE', request)
 
     @classmethod
@@ -150,7 +150,7 @@ class JSONMixin(object):
 
     @classmethod
     def get_json(cls, path):
-        cls.get(path)
+        cls.http_get(path)
         return cls.decode_json_response()
 
     @classmethod
@@ -160,5 +160,5 @@ class JSONMixin(object):
             body=json_dict,
             headers={'Content-Type': 'application/json'},
         )
-        cls.post(request)
+        cls.http_post(request)
         return cls.decode_json_response()

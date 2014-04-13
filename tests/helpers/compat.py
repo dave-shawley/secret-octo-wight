@@ -16,10 +16,10 @@ import sys
 
 try:
     from unittest import mock
-except ImportError:
+except ImportError:  # pragma: no cover
     import mock
 
-if sys.version_info[:2] < (2, 7):
+if sys.version_info[:2] < (2, 7):  # pragma: no cover
     import unittest2 as unittest
 else:
     import unittest

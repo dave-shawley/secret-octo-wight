@@ -19,7 +19,7 @@ class BaseHandlerTestCase(TornadoHandlerTestCase, unittest.TestCase):
 
 
 ###############################################################################
-### BaseHandler.get_url_for
+# BaseHandler.get_url_for
 ###############################################################################
 
 class WhenGettingUrlFromBaseHandler(BaseHandlerTestCase):
@@ -43,7 +43,7 @@ class WhenGettingUrlFromBaseHandler(BaseHandlerTestCase):
 
 
 ###############################################################################
-### BaseHandler.require_request_body
+# BaseHandler.require_request_body
 ###############################################################################
 
 class RequireRequestBodyTestCase(BaseHandlerTestCase):
@@ -98,7 +98,7 @@ class WhenRequiringRequestBodyWithoutContentLength(RequireRequestBodyTestCase):
 
 
 ###############################################################################
-### BaseHandler.serialize_model_instance
+# BaseHandler.serialize_model_instance
 ###############################################################################
 
 class _SerializeModelInstanceTestCase(BaseHandlerTestCase):
@@ -187,7 +187,7 @@ class WhenSerializingModelInstanceWithActions(_SerializeModelInstanceTestCase):
     @classmethod
     def act(cls):
         cls.returned = cls.handler.serialize_model_instance(
-            cls.model_instance, mock.MagicMock(), mock.MagicMock(), cls.action)
+            cls.model_instance, actions=[cls.action])
 
     def should_create_action_card(self):
         self.model_representation.setdefault.assert_any_call('actions', {})
@@ -221,7 +221,7 @@ class WhenSerializingModelInstanceWithActions(_SerializeModelInstanceTestCase):
 
 
 ###############################################################################
-### BaseHandler.deserialize_model_instance
+# BaseHandler.deserialize_model_instance
 ###############################################################################
 
 class WhenDeserializingModelInstance(BaseHandlerTestCase):
@@ -249,7 +249,7 @@ class WhenDeserializingModelInstance(BaseHandlerTestCase):
 
 
 ###############################################################################
-### BaseHandler.request_body
+# BaseHandler.request_body
 ###############################################################################
 
 class _RequestBodyTestCase(BaseHandlerTestCase):

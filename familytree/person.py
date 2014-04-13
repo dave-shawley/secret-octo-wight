@@ -7,6 +7,24 @@ from . import http
 from . import storage
 
 
+def get_handlers(url_stem):
+    return [
+        (url_stem, CreatePersonHandler),
+        (url_stem + '/([a-f0-9]+)', PersonHandler),
+    ]
+
+
+def get_applicable_actions(person):
+    return [
+        {
+            'name': 'delete-person',
+            'method': 'DELETE',
+            'handler': PersonHandler,
+            'args': (person.id,)
+        },
+    ]
+
+
 class Person(object):
 
     """Information about a single person.
@@ -117,12 +135,7 @@ class CreatePersonHandler(handlers.BaseHandler):
 
             self.serialize_model_instance(
                 a_person,
-                {
-                    'name': 'delete-person',
-                    'method': 'DELETE',
-                    'handler': PersonHandler,
-                    'args': (a_person.id,)
-                },
+                actions=get_applicable_actions(a_person),
                 model_handler=PersonHandler,
             )
             self.set_status(http.CREATED)
@@ -153,12 +166,7 @@ class PersonHandler(handlers.BaseHandler):
 
         self.serialize_model_instance(
             a_person,
-            {
-                'name': 'delete-person',
-                'method': 'DELETE',
-                'handler': PersonHandler,
-                'args': (a_person.id,)
-            },
+            actions=get_applicable_actions(a_person),
             model_handler=PersonHandler,
         )
         self.set_status(http.OK)

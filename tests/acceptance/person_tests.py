@@ -21,7 +21,7 @@ class WhenCreatingPersonWithoutBody(tornado.TornadoTestCase):
 
     @classmethod
     def act(cls):
-        cls.response = cls.post(cls.build_request('person', body=''))
+        cls.response = cls.http_post(cls.build_request('person', body=''))
 
     def should_fail_with_bad_request(self):
         self.assertEqual(self.response.code, 400)
@@ -50,7 +50,7 @@ class WhenCreatingPersonWithUnrecognizedContentType(tornado.TornadoTestCase):
 
     @classmethod
     def act(cls):
-        cls.response = cls.post(cls.build_request(
+        cls.response = cls.http_post(cls.build_request(
             'person',
             headers={'Content-Type': 'application/vnd.does.not.exist'},
             body='Random Gibberish',
@@ -109,10 +109,7 @@ class WhenFetchingCreatedPerson(PersonApiTestCase):
             self.last_response.headers['Location'], self.person_url)
 
     def should_include_delete_person_action(self):
-        self.assertDictContainsSubset(
-            {'method': 'DELETE'},
-            self.response['actions']['delete-person'],
-        )
+        self.assert_has_action(self.response, 'delete-person')
 
 
 class WhenDeletingPerson(PersonApiTestCase):
@@ -124,12 +121,11 @@ class WhenDeletingPerson(PersonApiTestCase):
 
     @classmethod
     def act(cls):
-        cls.response = cls.delete(
-            cls.person['actions']['delete-person']['url'])
+        cls.response = cls.perform_action(cls.person, 'delete-person')
 
     def should_return_no_content(self):
         self.assertEqual(self.response.code, 204)
 
     def should_return_not_found_after_delete(self):
-        response = self.get(self.person['self'])
+        response = self.http_get(self.person['self'])
         self.assertEqual(response.code, 404)

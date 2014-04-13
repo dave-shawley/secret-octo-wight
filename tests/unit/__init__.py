@@ -13,3 +13,14 @@ class TornadoHandlerTestCase(fluenttest.TestCase):
 
         cls.request = mock.Mock()
         cls.request.headers = {}
+
+
+class ActionCardTestMixin(object):
+
+    def assert_action_returned(self, **action_attributes):
+        for action in self.action_card:
+            if action == action_attributes:
+                return
+        raise AssertionError(
+            'Expected action_attributes {0} to be in {1}'.format(
+                action_attributes, self.action_card))  # pragma: no cover

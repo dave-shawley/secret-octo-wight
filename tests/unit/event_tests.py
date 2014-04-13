@@ -1,14 +1,36 @@
 from tornado import web
+import fluenttest
 
 from familytree import event
 from familytree import person
-from . import TornadoHandlerTestCase
+from . import ActionCardTestMixin, TornadoHandlerTestCase
 from ..helpers.compat import mock
 from ..helpers.compat import unittest
 
 
 ###############################################################################
-### CreateEventHandler.post
+# get_applicable_actions
+###############################################################################
+
+class WhenGettingApplicableActions(ActionCardTestMixin, fluenttest.TestCase):
+
+    @classmethod
+    def arrange(cls):
+        super(WhenGettingApplicableActions, cls).arrange()
+        cls.event = mock.Mock()
+
+    @classmethod
+    def act(cls):
+        cls.action_card = event.get_applicable_actions(cls.event)
+
+    def should_return_delete_event_action(self):
+        self.assert_action_returned(name='delete-event', method='DELETE',
+                                    handler=event.EventHandler,
+                                    args=(self.event.id, ))
+
+
+###############################################################################
+# CreateEventHandler.post
 ###############################################################################
 
 class CreateEventHandlerTestCase(TornadoHandlerTestCase):
@@ -16,6 +38,7 @@ class CreateEventHandlerTestCase(TornadoHandlerTestCase):
     @classmethod
     def arrange(cls):
         super(CreateEventHandlerTestCase, cls).arrange()
+        cls.get_actions = cls.patch('familytree.event.get_applicable_actions')
         cls.storage = cls.patch('familytree.event.storage')
         cls.uuid_module = cls.patch('familytree.event.uuid')
         cls.handler = event.CreateEventHandler(cls.application, cls.request)
@@ -43,7 +66,7 @@ class CreateEventHandlerTestCase(TornadoHandlerTestCase):
     def should_serialize_model_instance(self):
         self.handler.serialize_model_instance.assert_called_once_with(
             self.handler.deserialize_model_instance.return_value,
-            mock.ANY,
+            actions=self.get_actions.return_value,
             model_handler=event.EventHandler,
         )
 
@@ -93,7 +116,7 @@ class WhenPostingToCreateEventHandlerWithPeople(CreateEventHandlerTestCase):
 
 
 ###############################################################################
-### EventHandler.get
+# EventHandler.get
 ###############################################################################
 
 class WhenEventHandlerGets(TornadoHandlerTestCase):
@@ -101,6 +124,7 @@ class WhenEventHandlerGets(TornadoHandlerTestCase):
     @classmethod
     def arrange(cls):
         super(WhenEventHandlerGets, cls).arrange()
+        cls.get_actions = cls.patch('familytree.event.get_applicable_actions')
         cls.storage = cls.patch('familytree.event.storage')
         cls.event = cls.storage.get_item.return_value
         cls.handler = event.EventHandler(cls.application, cls.request)
@@ -118,7 +142,7 @@ class WhenEventHandlerGets(TornadoHandlerTestCase):
     def should_serialize_model_instance(self):
         self.handler.serialize_model_instance.assert_called_once_with(
             self.event,
-            mock.ANY,
+            actions=self.get_actions.return_value,
             model_handler=event.EventHandler,
         )
 
@@ -127,7 +151,7 @@ class WhenEventHandlerGets(TornadoHandlerTestCase):
 
 
 ###############################################################################
-### EventHandler.delete
+# EventHandler.delete
 ###############################################################################
 
 class EventHandlerDeleteTestCase(TornadoHandlerTestCase, unittest.TestCase):
