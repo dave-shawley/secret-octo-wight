@@ -7,12 +7,12 @@ exists to hide some of the Python 2 to Python 3 migration headaches.
 """
 try:
     import http.client as _httpclient
-except ImportError:
+except ImportError:  # pragma: no cover
     import httplib as _httpclient
 
 try:
     from urllib.parse import urljoin
-except ImportError:
+except ImportError:  # pragma: no cover
     from urlparse import urljoin
 
 

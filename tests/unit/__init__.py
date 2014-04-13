@@ -23,4 +23,4 @@ class ActionCardTestMixin(object):
                 return
         raise AssertionError(
             'Expected action_attributes {0} to be in {1}'.format(
-                action_attributes, self.action_card))
+                action_attributes, self.action_card))  # pragma: no cover

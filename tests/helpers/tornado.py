@@ -14,7 +14,7 @@ from familytree import http
 from .compat import unittest
 
 
-if sys.version_info[0] < 3:
+if sys.version_info[0] < 3:  # pragma: no cover
     def is_string(obj):
         return isinstance(obj, basestring)
 else:
@@ -22,7 +22,7 @@ else:
         return isinstance(obj, str)
 
 
-def log(msg_format, *args, **kwargs):  # pragma nocover
+def log(msg_format, *args, **kwargs):  # pragma no cover
     print(msg_format.format(*args, **kwargs), file=sys.stderr)
 
 
@@ -31,7 +31,7 @@ class TornadoTestCase(fluenttest.TestCase, unittest.TestCase):
     last_response = None
 
     @classmethod
-    def make_application(cls):  # pragma nocover
+    def make_application(cls):  # pragma no cover
         """Implement this to return the application under test."""
 
     @classmethod
@@ -70,7 +70,7 @@ class TornadoTestCase(fluenttest.TestCase, unittest.TestCase):
     def _stop(cls, arg=None, **kwargs):
         result = kwargs or arg
         cls.io_loop.stop()
-        if cls.show_trace:  # pragma nocover
+        if cls.show_trace:  # pragma no cover
             if result:
                 if hasattr(result, 'request'):
                     log('REQUEST: {0.method} {0.url}', result.request)
