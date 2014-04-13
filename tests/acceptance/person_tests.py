@@ -109,7 +109,7 @@ class WhenFetchingCreatedPerson(PersonApiTestCase):
             self.last_response.headers['Location'], self.person_url)
 
     def should_include_delete_person_action(self):
-        self.assertIn('delete-person', self.response['actions'])
+        self.assert_has_action(self.response, 'delete-person')
 
 
 class WhenDeletingPerson(PersonApiTestCase):
@@ -121,8 +121,7 @@ class WhenDeletingPerson(PersonApiTestCase):
 
     @classmethod
     def act(cls):
-        cls.response = cls.http_delete(
-            cls.person['actions']['delete-person']['url'])
+        cls.response = cls.perform_action(cls.person, 'delete-person')
 
     def should_return_no_content(self):
         self.assertEqual(self.response.code, 204)
